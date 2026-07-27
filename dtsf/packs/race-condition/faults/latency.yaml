@@ -1,0 +1,13 @@
+# Fault Profile: Latency Injection
+# Adds configurable delay to all responses from the race-condition twin.
+# Useful for exercising the frontend's REST timeout/retry behavior and for
+# DTSF stress/replay simulations against the control plane.
+type: latency
+description: Inject artificial latency into gateway twin responses
+config:
+  minMs: 50
+  maxMs: 300
+  distribution: uniform
+triggers:
+  - scope: endpoint
+    probability: 1.0

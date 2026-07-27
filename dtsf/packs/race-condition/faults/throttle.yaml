@@ -1,0 +1,12 @@
+# Fault Profile: 429 Throttling
+# Returns HTTP 429 after a call-count threshold — mirrors how a real gateway
+# under load (e.g. many runners spawning on the same tick) would shed traffic.
+type: throttle
+description: Simulate rate-limit throttling (HTTP 429) on the gateway twin
+config:
+  maxCallsPerWindow: 60
+  windowSeconds: 60
+  retryAfterSeconds: 5
+triggers:
+  - scope: endpoint
+    probability: 1.0

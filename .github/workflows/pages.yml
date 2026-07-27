@@ -1,0 +1,119 @@
+# Builds the Race Condition Angular frontend and deploys it to GitHub Pages.
+#
+# WHY THIS EXISTS
+#   The 3D frontend needs `npm install` + `ng build`. Locally that is blocked by
+#   the corporate npm feed, but GitHub's runners reach the public registry, so
+#   the build happens here instead of on your machine.
+#
+# WHAT YOU GET
+#   The exact Race Condition experience in Cached mode (the default the upstream
+#   repo ships): all demos, real recorded runs, ZERO backend required.
+#   To drive the DTSF twin's REST control plane from the deployed app, edit
+#   `assets/config.js` after deploy (see BACKEND WIRING below) — no rebuild.
+#
+# HISTED PATH / ASSETS CAVEAT
+#   Cached mode fetches recordings via ABSOLUTE paths (/assets/*.ndjson). Those
+#   resolve correctly only when the site is served at the ROOT of the origin:
+#     - a USER/ORG page  (https://<user>.github.io/)      ✅ works as-is
+#     - a CUSTOM DOMAIN  (https://race.example.com/)       ✅ works as-is
+#     - a PROJECT page   (https://<user>.github.io/<repo>/) ⚠ absolute /assets
+#       404 under the subpath. Use a user/org page or custom domain for v1, or
+#       apply the base-href-relative asset fix (SYSTEM-DESIGN.md §7.2).
+#   BASE_HREF below defaults to "/" (root hosting). Set it to "/<repo>/" only if
+#   you also apply the asset fix.
+
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/frontend/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+    inputs:
+      base_href:
+        description: "Angular base-href (use '/<repo>/' only with the asset fix)"
+        default: "/"
+        required: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BASE_HREF: ${{ github.event.inputs.base_href || '/' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web/frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Build (Cached-mode static bundle)
+        working-directory: web/frontend
+        run: npm run build -- --base-href "$BASE_HREF"
+
+      - name: Locate build output
+        id: dist
+        working-directory: web/frontend
+        run: |
+          # Angular's application builder emits to dist/<project>/browser.
+          OUT=$(find dist -maxdepth 2 -type d -name browser | head -n1)
+          if [ -z "$OUT" ]; then OUT=$(find dist -maxdepth 1 -type d | tail -n1); fi
+          echo "Using build output: $OUT"
+          echo "path=web/frontend/$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: SPA fallback + disable Jekyll
+        run: |
+          cp "${{ steps.dist.outputs.path }}/index.html" "${{ steps.dist.outputs.path }}/404.html"
+          touch "${{ steps.dist.outputs.path }}/.nojekyll"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.dist.outputs.path }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+# ─────────────────────────────────────────────────────────────────────────────
+# BACKEND WIRING (optional — Cached mode needs no backend)
+#
+# The app reads window.ENV from assets/config.js at RUNTIME (see
+# web/frontend/src/app/agent-gateway-updates.ts). To point the deployed app's
+# REST calls at your DTSF twin WITHOUT rebuilding, publish a config.js such as:
+#
+#   window.ENV = {
+#     NG_APP_GATEWAY_ADDR: "http://localhost:8080/race-condition", // local docker DTSF
+#     NG_APP_GATEWAY_URL:  ""                                       // no live WS against the twin
+#   };
+#
+# Notes:
+#   • Browsers allow an HTTPS page to call http://localhost (localhost is treated
+#     as a secure context), so a Pages site CAN reach a local docker DTSF.
+#   • A server-hosted DTSF must be HTTPS (behind your proxy) to avoid mixed
+#     content: NG_APP_GATEWAY_ADDR: "https://<host>/race-condition".
+#   • The twin sends permissive CORS headers, so cross-origin calls succeed.
+#   • Live /ws is not served by the twin by design — keep the app in Cached mode
+#     for the visual stream.
+# ─────────────────────────────────────────────────────────────────────────────

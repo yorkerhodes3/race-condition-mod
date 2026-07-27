@@ -1,0 +1,266 @@
+openapi: "3.0.3"
+info:
+  title: Race Condition Gateway (DTSF Twin)
+  version: "0.1.0"
+  description: >
+    Behavioral clone of the Race Condition Go gateway's REST control plane.
+    Mirrors docs/api/REFERENCE.md from the race-condition repo. The realtime
+    WebSocket channel (/ws) is not modeled here — see the pack README for how
+    the frontend handles the event stream in Cached mode.
+servers:
+  - url: /race-condition
+    description: DTSF-mounted twin base path (localhost:8080/race-condition)
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      operationId: health
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  service: { type: string, example: gateway }
+                  twin: { type: string, example: race-condition }
+
+  /config:
+    get:
+      summary: Runtime configuration
+      operationId: getConfig
+      responses:
+        "200":
+          description: Config values
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  max_runners: { type: integer, example: 100 }
+
+  /api/v1/agent-types:
+    get:
+      summary: Discover available agent types
+      operationId: listAgentTypes
+      responses:
+        "200":
+          description: Map of agent name to agent card
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/AgentCard"
+
+  /api/v1/sessions:
+    get:
+      summary: List active session IDs
+      operationId: listSessions
+      responses:
+        "200":
+          description: Array of active session IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: string }
+    post:
+      summary: Create a single agent session
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agentType, userId]
+              properties:
+                agentType: { type: string, example: runner }
+                userId: { type: string, example: user1 }
+                simulation_id: { type: string, nullable: true }
+      responses:
+        "201":
+          description: Session accepted (pending spawn)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: pending }
+                  sessionId: { type: string }
+                  message: { type: string }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v1/sessions/flush:
+    post:
+      summary: Flush all sessions
+      operationId: flushSessions
+      responses:
+        "200":
+          description: Sessions flushed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: flushed }
+                  count: { type: integer }
+
+  /api/v1/spawn:
+    post:
+      summary: Batch-spawn agent sessions
+      operationId: spawn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agents]
+              properties:
+                agents:
+                  type: array
+                  items:
+                    type: object
+                    required: [agentType, count]
+                    properties:
+                      agentType: { type: string, example: runner_autopilot }
+                      count: { type: integer, example: 50 }
+                simulation_id: { type: string, nullable: true }
+      responses:
+        "201":
+          description: Sessions spawned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: spawned }
+                  simulation_id: { type: string }
+                  count: { type: integer }
+                  sessions: { type: array, items: { type: string } }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v1/simulations:
+    get:
+      summary: List active simulation IDs
+      operationId: listSimulations
+      responses:
+        "200":
+          description: Active simulation IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  simulations: { type: array, items: { type: string } }
+
+  /api/v1/environment/reset:
+    post:
+      summary: Selectively reset environment state
+      operationId: resetEnvironment
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targets:
+                  type: array
+                  items:
+                    type: string
+                    enum: [sessions, queues, maps, pubsub]
+      responses:
+        "200":
+          description: Per-target reset result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    flushed: { type: boolean }
+                    count: { type: integer }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v1/replay:
+    get:
+      summary: Twin-driven race replay trajectory
+      description: >
+        Returns a full, deterministic race trajectory in a single response
+        (the DTSF pack contract cannot hold a live stream open). Clients replay
+        the frames with timing — the same pattern the Race Condition frontend
+        uses for Cached mode. Derived from current session/simulation state and
+        the manifest seed, so results are reproducible.
+      operationId: replay
+      parameters:
+        - name: runners
+          in: query
+          schema: { type: integer, default: 8, minimum: 1, maximum: 64 }
+        - name: ticks
+          in: query
+          schema: { type: integer, default: 60, minimum: 1, maximum: 200 }
+        - name: simulation_id
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Replay trajectory
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  simulation_id: { type: string }
+                  seed: { type: integer }
+                  ticks: { type: integer }
+                  minutes_per_tick: { type: number }
+                  runners:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        agentType: { type: string }
+                  frames:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tick: { type: integer }
+                        positions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id: { type: string }
+                              progress: { type: number }
+                              pace: { type: number }
+
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              allowed: { type: array, items: { type: string } }
+  schemas:
+    AgentCard:
+      type: object
+      properties:
+        name: { type: string }
+        url: { type: string }
+        description: { type: string }
