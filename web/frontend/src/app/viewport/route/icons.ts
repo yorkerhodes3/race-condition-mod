@@ -34,11 +34,11 @@ export async function loadIconTextures(ctx: Context): Promise<void> {
     ctx.warningTexture,
     ctx.iconDiamondTexture,
   ] = await Promise.all([
-    ctx.textureLoader.loadAsync('/assets/textures/pin_gradient.png'),
-    ctx.textureLoader.loadAsync('/assets/textures/TX_circle_bg.png'),
-    ctx.textureLoader.loadAsync('/assets/textures/TX_circle_filled.png'),
-    ctx.textureLoader.loadAsync('/assets/textures/warning.png'),
-    ctx.textureLoader.loadAsync('/assets/textures/icons/icon_diamond.png'),
+    ctx.textureLoader.loadAsync('assets/textures/pin_gradient.png'),
+    ctx.textureLoader.loadAsync('assets/textures/TX_circle_bg.png'),
+    ctx.textureLoader.loadAsync('assets/textures/TX_circle_filled.png'),
+    ctx.textureLoader.loadAsync('assets/textures/warning.png'),
+    ctx.textureLoader.loadAsync('assets/textures/icons/icon_diamond.png'),
   ]);
 }
 
@@ -257,7 +257,7 @@ export async function getWaterZone(ctx: Context): Promise<THREE.Mesh> {
   await loadIconTextures(ctx);
 
   const causticsMaterial = createCausticsMaterial();
-  const causticsTex = await ctx.textureLoader.loadAsync('/assets/textures/caustics.jpg');
+  const causticsTex = await ctx.textureLoader.loadAsync('assets/textures/caustics.jpg');
   causticsTex.wrapT = causticsTex.wrapS = THREE.RepeatWrapping;
   causticsMaterial.uniforms['causticsMap'].value = causticsTex;
   ctx.zonesMaterialArray.push(causticsMaterial);
@@ -277,7 +277,7 @@ export async function getWaterZone(ctx: Context): Promise<THREE.Mesh> {
   cylinderMesh.position.y = 200;
   mesh.add(cylinderMesh);
 
-  const bubbleTexture = await ctx.textureLoader.loadAsync('/assets/textures/bubble.png');
+  const bubbleTexture = await ctx.textureLoader.loadAsync('assets/textures/bubble.png');
   const points = createAnimatedParticles(0x42ebff, bubbleTexture, 100, 40, 100, 300, false);
   if (!ctx.causticsParticleMaterial) {
     ctx.causticsParticleMaterial = points.material as THREE.ShaderMaterial;
@@ -300,7 +300,7 @@ export async function getMedicalZone(ctx: Context): Promise<THREE.Mesh> {
   await loadIconTextures(ctx);
 
   const medicalMaterial = createMedicalMaterial();
-  const medicalTex = await ctx.textureLoader.loadAsync('/assets/textures/ekg.jpg');
+  const medicalTex = await ctx.textureLoader.loadAsync('assets/textures/ekg.jpg');
   medicalTex.wrapS = THREE.RepeatWrapping;
   medicalMaterial.uniforms['medicalMap'].value = medicalTex;
   ctx.zonesMaterialArray.push(medicalMaterial);
@@ -321,7 +321,7 @@ export async function getMedicalZone(ctx: Context): Promise<THREE.Mesh> {
   cylinderMesh.position.y = 200;
   mesh.add(cylinderMesh);
 
-  const crossTexture = await ctx.textureLoader.loadAsync('/assets/textures/cross.png');
+  const crossTexture = await ctx.textureLoader.loadAsync('assets/textures/cross.png');
   const points = createAnimatedParticles(0x888888, crossTexture, 100, 20, 100, 300, true);
   if (!ctx.medicalParticleMaterial) {
     ctx.medicalParticleMaterial = points.material as THREE.ShaderMaterial;
@@ -343,7 +343,7 @@ export async function getToiletZone(ctx: Context): Promise<THREE.Mesh> {
   await loadIconTextures(ctx);
 
   const toiletMaterial = createToiletMaterial();
-  const toiletTex = await ctx.textureLoader.loadAsync('/assets/textures/toilet.jpg');
+  const toiletTex = await ctx.textureLoader.loadAsync('assets/textures/toilet.jpg');
   //toiletTex.wrapT = toiletTex.wrapS = THREE.RepeatWrapping;
   toiletMaterial.uniforms['toiletMap'].value = toiletTex;
   ctx.zonesMaterialArray.push(toiletMaterial);
@@ -366,7 +366,7 @@ export async function getToiletZone(ctx: Context): Promise<THREE.Mesh> {
   mesh.add(cylinderMesh);
 
   /*
-  const bubbleTexture = await ctx.textureLoader.loadAsync('/assets/textures/bubble.png');
+  const bubbleTexture = await ctx.textureLoader.loadAsync('assets/textures/bubble.png');
   const points = createAnimatedParticles(0x42ebff, bubbleTexture, 100, 40, 100, 300, false);
   if (!ctx.causticsParticleMaterial) {
     ctx.causticsParticleMaterial = points.material as THREE.ShaderMaterial;
@@ -408,7 +408,7 @@ export async function getPortableToiletZone(ctx: Context): Promise<THREE.Mesh> {
   await loadIconTextures(ctx);
 
   const portableToiletMaterial = createToiletMaterial();
-  const toiletTex = await ctx.textureLoader.loadAsync('/assets/textures/toilet.jpg');
+  const toiletTex = await ctx.textureLoader.loadAsync('assets/textures/toilet.jpg');
   portableToiletMaterial.uniforms['toiletMap'].value = toiletTex;
   portableToiletMaterial.uniforms['baseColor'].value = new THREE.Color(0x331a22);
   portableToiletMaterial.uniforms['activeColor'].value = new THREE.Color(0xff9494);
@@ -447,7 +447,7 @@ export async function getCrowdZone(ctx: Context): Promise<THREE.Mesh> {
   const geo = new THREE.SphereGeometry(100, 36, 36, 0, Math.PI * 2, 0, Math.PI * 0.5);
   const mesh = new THREE.Mesh(geo, crowdMaterial);
 
-  const heartTexture = await ctx.textureLoader.loadAsync('/assets/textures/heart.png');
+  const heartTexture = await ctx.textureLoader.loadAsync('assets/textures/heart.png');
   const points = createAnimatedParticles(0xff7d7d, heartTexture, 100, 20, 150, 400, true);
   if (!ctx.crowdParticleMaterial) {
     ctx.crowdParticleMaterial = points.material as THREE.ShaderMaterial;

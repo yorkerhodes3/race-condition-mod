@@ -88,14 +88,14 @@ async function _initRouteImpl(
   const splineLength = spline.getLength();
 
   ctx.routeStripeTexture = await ctx.textureLoader.loadAsync(
-    '/assets/textures/dash_transparent.png',
+    'assets/textures/dash_transparent.png',
   );
   ctx.routeStripeTexture.wrapT = ctx.routeStripeTexture.wrapS = THREE.RepeatWrapping;
   ctx.routeStripeTexture.offset.y = 0.5;
   ctx.routeStripeTexture.repeat.x = splineLength * 0.02;
 
   ctx.routeCompleteTexture = await ctx.textureLoader.loadAsync(
-    '/assets/textures/next_gradient.jpg',
+    'assets/textures/next_gradient.jpg',
   );
   ctx.routeCompleteTexture.wrapT = ctx.routeCompleteTexture.wrapS = THREE.RepeatWrapping;
 
@@ -293,7 +293,7 @@ async function _initRunnerRouteImpl(ctx: Context, spline: THREE.CatmullRomCurve3
 
   const splineLength = spline.getLength();
 
-  ctx.routeRunnerTexture = await ctx.textureLoader.loadAsync('/assets/textures/race_gradient.jpg');
+  ctx.routeRunnerTexture = await ctx.textureLoader.loadAsync('assets/textures/race_gradient.jpg');
   if (gen !== _runnerRouteGeneration) return;
   ctx.routeRunnerTexture.wrapT = ctx.routeRunnerTexture.wrapS = THREE.RepeatWrapping;
   ctx.routeRunnerTexture.repeat.x = splineLength * 0.001;
@@ -399,7 +399,7 @@ export function removeRunnerRoute(ctx: Context): void {
 export async function setRaceComplete(ctx: Context): Promise<void> {
   if (ctx.runnerRoute) {
     ctx.routeCompleteTexture = await ctx.textureLoader.loadAsync(
-      '/assets/textures/next_gradient.jpg',
+      'assets/textures/next_gradient.jpg',
     );
     ctx.routeCompleteTexture.wrapT = ctx.routeCompleteTexture.wrapS = THREE.RepeatWrapping;
     (ctx.runnerRoute.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(0xffffff);
@@ -560,7 +560,7 @@ export async function startOutro(ctx: Context) {
   // update "Hero" runner material
   if (!ctx.routeCompleteTexture) {
     ctx.routeCompleteTexture = await ctx.textureLoader.loadAsync(
-      '/assets/textures/next_gradient.jpg',
+      'assets/textures/next_gradient.jpg',
     );
     ctx.routeCompleteTexture.wrapT = ctx.routeCompleteTexture.wrapS = THREE.RepeatWrapping;
   }

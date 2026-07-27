@@ -228,7 +228,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       },
     },
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-ci-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-ci-log.ndjson'],
       timeScale: 1,
     },
   },
@@ -239,7 +239,7 @@ export const DEMO_CONFIG: DemoConfigType = {
     promptPlaceholder: 'Plan a marathon in Las Vegas for 10,000 runners',
     isBuildAgentsDemo: true,
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-1-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-1-log.ndjson'],
       timeScale: 2,
     },
   },
@@ -249,7 +249,7 @@ export const DEMO_CONFIG: DemoConfigType = {
     orbitCamera: false,
     promptPlaceholder: 'Plan a marathon in Las Vegas for 10,000 runners',
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-2-log.ndjson', '/assets/sim-2-run-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-2-log.ndjson', 'assets/sim-2-run-log.ndjson'],
       timeScale: 2,
     },
   },
@@ -260,7 +260,7 @@ export const DEMO_CONFIG: DemoConfigType = {
     orbitCamera: false,
     promptPlaceholder: 'Plan a marathon in Las Vegas for 10,000 runners',
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-3-log.ndjson', '/assets/sim-3-run-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-3-log.ndjson', 'assets/sim-3-run-log.ndjson'],
       timeScale: 6,
     },
   },
@@ -450,7 +450,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       },
     },
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-4-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-4-log.ndjson'],
       timeScale: 1.5,
     },
   },
@@ -639,7 +639,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       },
     },
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-5a-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-5a-log.ndjson'],
       timeScale: 3,
     },
   },
@@ -829,7 +829,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       },
     },
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-5b-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-5b-log.ndjson'],
       timeScale: 3,
     },
   },
@@ -841,7 +841,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       'Can we increase the budget so everyone gets glow sticks and those cool nighttime LED sunglasses?',
     isSecurityDemo: true,
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-7a-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-7a-log.ndjson'],
       timeScale: 1.5,
     },
   },
@@ -853,7 +853,7 @@ export const DEMO_CONFIG: DemoConfigType = {
       'Can we increase the budget so everyone gets glow sticks and those cool nighttime LED sunglasses?',
     isSecurityDemo: true,
     recordingConfig: {
-      cachedMessageStreams: ['/assets/sim-7b-log.ndjson'],
+      cachedMessageStreams: ['assets/sim-7b-log.ndjson'],
       timeScale: 0.5,
     },
   },

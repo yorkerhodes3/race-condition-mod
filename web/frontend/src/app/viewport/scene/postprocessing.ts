@@ -107,7 +107,7 @@ export function initPostProcessing(ctx: Context): void {
   ctx.lutPass.intensity = 1.0;
   ctx.lutPass.enabled = false;
   ctx.composer.addPass(ctx.lutPass);
-  new LUTCubeLoader().loadAsync('/assets/luts/Lut_v05.lut.CUBE').then((result: any) => {
+  new LUTCubeLoader().loadAsync('assets/luts/Lut_v05.lut.CUBE').then((result: any) => {
     if (!ctx.lutPass) return;
     ctx.lutPass.lut = result.texture3D;
     ctx.lutPass.enabled = true;

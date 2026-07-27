@@ -19,8 +19,9 @@
 #     - a PROJECT page   (https://<user>.github.io/<repo>/) ⚠ absolute /assets
 #       404 under the subpath. Use a user/org page or custom domain for v1, or
 #       apply the base-href-relative asset fix (SYSTEM-DESIGN.md §7.2).
-#   BASE_HREF below defaults to "/" (root hosting). Set it to "/<repo>/" only if
-#   you also apply the asset fix.
+#   Assets use base-href-relative paths (leading-slash stripped), so the build
+#   works at a project subpath, at root, or on a custom domain. BASE_HREF below
+#   defaults to "/<repo>/" (project page) and is overridable via workflow_dispatch.
 
 name: Deploy frontend to GitHub Pages
 
@@ -33,8 +34,8 @@ on:
   workflow_dispatch:
     inputs:
       base_href:
-        description: "Angular base-href (use '/<repo>/' only with the asset fix)"
-        default: "/"
+        description: "Angular base-href (blank = auto '/<repo>/'; use '/' for root/custom-domain)"
+        default: ""
         required: false
 
 permissions:
@@ -50,7 +51,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BASE_HREF: ${{ github.event.inputs.base_href || '/' }}
+      BASE_HREF: ${{ github.event.inputs.base_href || format('/{0}/', github.event.repository.name) }}
     steps:
       - uses: actions/checkout@v4
 

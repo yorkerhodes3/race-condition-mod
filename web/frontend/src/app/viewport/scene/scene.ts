@@ -213,7 +213,7 @@ export function initHorizon(ctx: Context): void {
 
 // ── GLB model + material assignment ──────────────────────────────────────────
 export async function initModel(ctx: Context): Promise<void> {
-  const gltfLoader = new GLTFLoader().setPath('/assets/');
+  const gltfLoader = new GLTFLoader().setPath('assets/');
   gltfLoader.setMeshoptDecoder(MeshoptDecoder as any);
 
   const [gltf] = await Promise.all([gltfLoader.loadAsync('models/Google_LasVegas_Export_v32.glb')]);
@@ -221,15 +221,15 @@ export async function initModel(ctx: Context): Promise<void> {
   gltf.scene.scale.set(1, 1, 1);
   ctx.scene.add(gltf.scene);
 
-  const windows = await ctx.textureLoader.loadAsync('/assets/textures/windows.png');
+  const windows = await ctx.textureLoader.loadAsync('assets/textures/windows.png');
   windows.wrapS = THREE.RepeatWrapping;
   windows.wrapT = THREE.RepeatWrapping;
   windows.minFilter = windows.magFilter = THREE.NearestFilter;
 
-  const trafficTexture = await ctx.textureLoader.loadAsync('/assets/textures/traffic.png');
+  const trafficTexture = await ctx.textureLoader.loadAsync('assets/textures/traffic.png');
   trafficTexture.wrapT = trafficTexture.wrapS = THREE.RepeatWrapping;
   //trafficTexture.minFilter = trafficTexture.magFilter = THREE.NearestFilter;
-  const trafficJamTexture = await ctx.textureLoader.loadAsync('/assets/textures/traffic_que.png');
+  const trafficJamTexture = await ctx.textureLoader.loadAsync('assets/textures/traffic_que.png');
   trafficJamTexture.wrapT = trafficJamTexture.wrapS = THREE.RepeatWrapping;
   //trafficJamTexture.minFilter = trafficJamTexture.magFilter = THREE.NearestFilter;
   ctx.heightFogMaterial = createHeightFogMaterial();

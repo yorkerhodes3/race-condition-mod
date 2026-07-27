@@ -250,7 +250,7 @@ export function initTweakpane(
         fileInput.click();
         return;
       }
-      new LUTCubeLoader().loadAsync(`/assets/luts/${value}`).then((result: any) => {
+      new LUTCubeLoader().loadAsync(`assets/luts/${value}`).then((result: any) => {
         if (!ctx.lutPass) return;
         ctx.lutPass.lut = result.texture3D;
         ctx.lutPass.enabled = true;
