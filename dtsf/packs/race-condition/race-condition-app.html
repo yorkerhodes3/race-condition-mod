@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Race Condition — DTSF Twin Console</title>
+<style>
+  :root { --bg:#0b0f14; --panel:#141b24; --ink:#e6edf3; --mut:#8b98a5; --acc:#5ac8fa; --ok:#3fb950; --warn:#d29922; --err:#f85149; --line:#243040; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  .pill { font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--mut); }
+  .pill.ok { color:var(--ok); border-color:#20502c; }
+  .pill.err { color:var(--err); border-color:#5a1f1c; }
+  main { display:grid; grid-template-columns: 320px 1fr; gap:16px; padding:16px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .panel h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 10px; }
+  button { cursor:pointer; background:#1f2a37; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; }
+  button:hover { border-color:var(--acc); }
+  button.primary { background:#123044; border-color:#1d5c80; color:var(--acc); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  label { font-size:12px; color:var(--mut); display:flex; align-items:center; gap:6px; }
+  input { width:64px; background:#0e141b; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:4px 6px; }
+  .stat { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); }
+  .stat b { color:var(--acc); font-variant-numeric:tabular-nums; }
+  canvas { width:100%; height:360px; background:linear-gradient(#0e141b,#0b0f14); border:1px solid var(--line); border-radius:10px; display:block; }
+  .log { font:12px/1.5 ui-monospace,Consolas,monospace; height:150px; overflow:auto; background:#0e141b; border:1px solid var(--line); border-radius:8px; padding:8px; color:var(--mut); }
+  .log .t { color:var(--acc); }
+  .log .e { color:var(--err); }
+  a { color:var(--acc); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Race Condition — DTSF Twin Console</h1>
+  <span id="health" class="pill">checking…</span>
+  <span class="pill" id="seedPill">seed —</span>
+  <span style="flex:1"></span>
+  <span class="pill">served by DTSF · /_app/race-condition</span>
+</header>
+
+<main>
+  <section class="panel" style="display:flex;flex-direction:column;gap:14px;">
+    <div>
+      <h2>Control plane</h2>
+      <div class="row">
+        <label>runners <input id="nRunners" type="number" value="24" min="1" max="64" /></label>
+        <label>ticks <input id="nTicks" type="number" value="80" min="1" max="200" /></label>
+      </div>
+      <div class="row">
+        <button class="primary" id="btnSpawn">Spawn</button>
+        <button id="btnFlush">Flush</button>
+        <button id="btnReset">Reset</button>
+        <button id="btnRefresh">Refresh</button>
+      </div>
+    </div>
+    <div>
+      <h2>State</h2>
+      <div class="stat"><span>sessions</span><b id="stSessions">—</b></div>
+      <div class="stat"><span>simulations</span><b id="stSims">—</b></div>
+      <div class="stat"><span>agent types</span><b id="stAgents">—</b></div>
+    </div>
+    <div>
+      <h2>Replay</h2>
+      <div class="row">
+        <button class="primary" id="btnReplay">Run replay</button>
+        <button id="btnStop">Stop</button>
+      </div>
+      <div class="stat"><span>tick</span><b id="stTick">0</b></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px;">
+    <div class="panel">
+      <h2>Race replay (twin-driven trajectory)</h2>
+      <canvas id="track" width="1200" height="360"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Log</h2>
+      <div id="log" class="log"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+// The twin API is mounted at /race-condition on the same DTSF origin.
+const API = '/race-condition';
+const $ = (id) => document.getElementById(id);
+const logEl = $('log');
+function log(msg, cls) { const d = document.createElement('div'); if (cls) d.className = cls;
+  d.innerHTML = '<span class="t">' + new Date().toLocaleTimeString() + '</span> ' + msg; logEl.prepend(d); }
+
+async function api(path, opts) {
+  const res = await fetch(API + path, opts);
+  const txt = await res.text();
+  let body; try { body = JSON.parse(txt); } catch { body = txt; }
+  if (!res.ok) throw new Error(res.status + ' ' + (body && body.error ? body.error : txt));
+  return body;
+}
+
+async function refresh() {
+  try {
+    const [sessions, sims, agents] = await Promise.all([
+      api('/api/v1/sessions'), api('/api/v1/simulations'), api('/api/v1/agent-types'),
+    ]);
+    $('stSessions').textContent = Array.isArray(sessions) ? sessions.length : 0;
+    $('stSims').textContent = (sims.simulations || []).length;
+    $('stAgents').textContent = Object.keys(agents || {}).length;
+  } catch (e) { log('refresh failed: ' + e.message, 'e'); }
+}
+
+async function health() {
+  try { const h = await api('/health'); $('health').textContent = h.status; $('health').className = 'pill ok';
+    log('health: ' + JSON.stringify(h)); }
+  catch (e) { $('health').textContent = 'down'; $('health').className = 'pill err'; log('health failed: ' + e.message, 'e'); }
+}
+
+$('btnSpawn').onclick = async () => {
+  const count = Number($('nRunners').value) || 24;
+  try {
+    const r = await api('/api/v1/spawn', { method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ agents:[{ agentType:'runner_autopilot', count }], simulation_id:'console' }) });
+    log('spawned ' + r.count + ' → sim=' + r.simulation_id); refresh();
+  } catch (e) { log('spawn failed: ' + e.message, 'e'); }
+};
+$('btnFlush').onclick = async () => { try { const r = await api('/api/v1/sessions/flush', { method:'POST' });
+  log('flushed ' + r.count); refresh(); } catch (e) { log('flush failed: ' + e.message, 'e'); } };
+$('btnReset').onclick = async () => { try { await api('/api/v1/environment/reset', { method:'POST' });
+  log('environment reset'); refresh(); } catch (e) { log('reset failed: ' + e.message, 'e'); } };
+$('btnRefresh').onclick = refresh;
+
+// ---- Canvas replay ----
+const cv = $('track'), ctx = cv.getContext('2d');
+let anim = null;
+function draw(runners, frame, ticks) {
+  const W = cv.width, H = cv.height, padL = 90, padR = 40, top = 20;
+  const laneH = Math.max(4, Math.min(16, (H - top*2) / runners.length));
+  ctx.clearRect(0,0,W,H);
+  // finish line
+  ctx.strokeStyle = '#3fb95055'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W-padR, 0); ctx.lineTo(W-padR, H); ctx.stroke();
+  ctx.fillStyle = '#8b98a5'; ctx.font = '11px system-ui';
+  ctx.fillText('start', 6, 14); ctx.fillText('finish', W-padR-6, 14);
+  frame.positions.forEach((p, i) => {
+    const y = top + i*laneH + laneH/2;
+    const x = padL + p.progress * (W - padL - padR);
+    ctx.fillStyle = p.progress >= 1 ? '#3fb950' : '#5ac8fa';
+    ctx.beginPath(); ctx.arc(x, y, Math.max(2, laneH*0.35), 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = '#e6edf3'; ctx.font = '12px system-ui';
+  ctx.fillText('tick ' + frame.tick + ' / ' + ticks + '  ·  ' + runners.length + ' runners', 6, H-8);
+}
+
+$('btnReplay').onclick = async () => {
+  stop();
+  const runners = Number($('nRunners').value) || 24, ticks = Number($('nTicks').value) || 80;
+  let data;
+  try { data = await api('/api/v1/replay?runners=' + runners + '&ticks=' + ticks + '&simulation_id=console'); }
+  catch (e) { log('replay fetch failed: ' + e.message, 'e'); return; }
+  log('replay: ' + data.runners.length + ' runners, ' + data.ticks + ' ticks (seed ' + data.seed + ')');
+  let i = 0;
+  anim = setInterval(() => {
+    if (i >= data.frames.length) { stop(); log('replay complete'); return; }
+    const f = data.frames[i]; $('stTick').textContent = f.tick;
+    draw(data.runners, f, data.ticks); i++;
+  }, 60);
+};
+function stop() { if (anim) { clearInterval(anim); anim = null; } }
+$('btnStop').onclick = stop;
+
+// init
+(async () => { await health();
+  try { const h = await api('/health'); } catch {}
+  const rp = await api('/api/v1/replay?runners=1&ticks=1').catch(() => null);
+  if (rp) $('seedPill').textContent = 'seed ' + rp.seed;
+  refresh(); })();
+</script>
+</body>
+</html>

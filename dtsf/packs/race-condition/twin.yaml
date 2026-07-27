@@ -1,0 +1,25 @@
+apiVersion: dtsf/v0.1
+kind: TwinManifest
+metadata:
+  name: race-condition
+  owner: race-condition-mod
+  version: "0.1.0"
+  description: >
+    Digital twin of the Race Condition gateway control plane. Reproduces the
+    gateway's REST API (agent discovery, session/spawn lifecycle, simulation
+    registry, environment reset) as a deterministic, stateful DTSF twin.
+    The live /ws event stream is intentionally out of scope for the twin
+    (see README.md) — the Angular frontend replays it client-side in Cached
+    mode.
+contracts:
+  http:
+    openapi: "./contracts/openapi.yaml"
+behaviorPack:
+  entrypoint: "./behavior/pack.ts"
+state:
+  seed: 42
+faultProfiles:
+  - "./faults/latency.yaml"
+  - "./faults/throttle.yaml"
+capabilities:
+  - "rateLimits"
