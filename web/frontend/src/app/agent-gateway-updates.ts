@@ -301,6 +301,20 @@ class AgentGateway {
 
   private connectMonitor(): void {
     const wsUrl = resolveGatewayWsUrl();
+
+    // On a static deploy (e.g. GitHub Pages) with no configured gateway, the
+    // resolver falls back to localhost. Cached mode needs no socket, so don't
+    // spam reconnects to a backend that isn't there. Connect only when a
+    // gateway is actually reachable: explicitly configured via window.ENV /
+    // build env, or we're genuinely running on localhost.
+    const host = window.location.hostname;
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    const pointsAtLocalhost = wsUrl.includes('127.0.0.1') || wsUrl.includes('localhost');
+    if (pointsAtLocalhost && !isLocalHost) {
+      console.info('AgentGateway: no gateway configured — monitor socket disabled (Cached mode).');
+      return;
+    }
+
     console.debug('AgentGateway: connecting monitor to', wsUrl);
 
     const ws = new WebSocket(wsUrl);
