@@ -122,7 +122,7 @@ type LoadSkillData = {
 function resolveGatewayWsUrl(): string {
   const env = (window as any).ENV || {};
   const buildEnv = ((import.meta as any).env as Record<string, string> | undefined) || {};
-  const configured: string = env.NG_APP_GATEWAY_URL ?? buildEnv.NG_APP_GATEWAY_URL ?? '';
+  const configured: string = env.NG_APP_GATEWAY_URL ?? buildEnv['NG_APP_GATEWAY_URL'] ?? '';
   if (!configured) return 'ws://127.0.0.1:8101/ws';
   if (configured.startsWith('/')) {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -141,7 +141,7 @@ function resolveGatewayHttpBase(): string {
   const buildEnv = ((import.meta as any).env as Record<string, string> | undefined) || {};
   // Empty string from BFF means "use relative URLs" (BFF proxies /api/v1/*).
   // Build-time .env provides the absolute URL for local dev.
-  return env.NG_APP_GATEWAY_ADDR ?? buildEnv.NG_APP_GATEWAY_ADDR ?? '';
+  return env.NG_APP_GATEWAY_ADDR ?? buildEnv['NG_APP_GATEWAY_ADDR'] ?? '';
 }
 
 // ── AgentGateway ────────────────────────────────────────────────────────────
