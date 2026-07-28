@@ -32,9 +32,9 @@ window.ENV = {
   // DemoId one of: Sandbox, 1, 2, 3, 4, 5a, 5b, 7a, 7b. Empty string disables.
   // Overridable per-visit via ?demo=<id> in the URL.
   //
-  // NOTE: demos 2 and 3 carry the large runner-position streams
-  // (sim-2-run-log / sim-3-run-log, ~5.8 MB) that render the huddled runner
-  // field flowing along the route. Demo 4's recording is a 3 KB stub with no
-  // runner field, so it does NOT show the race. Default to 3.
-  AUTO_DEMO: '3',
+  // Demo 4 ("Debugging at scale") is wired to the full 1,000-runner recording
+  // (assets/1k-runners.ndjson) — the dense field of runner agents flowing along
+  // the route. Demos 2/3 also carry runner streams (sim-2/3-run-log). Tip:
+  // press Ctrl+A for the cinematic Strip camera during the race.
+  AUTO_DEMO: '4',
 };
