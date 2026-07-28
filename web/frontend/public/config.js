@@ -31,5 +31,10 @@ window.ENV = {
   // Auto-run a demo on load so visitors see a race immediately.
   // DemoId one of: Sandbox, 1, 2, 3, 4, 5a, 5b, 7a, 7b. Empty string disables.
   // Overridable per-visit via ?demo=<id> in the URL.
-  AUTO_DEMO: '4',
+  //
+  // NOTE: demos 2 and 3 carry the large runner-position streams
+  // (sim-2-run-log / sim-3-run-log, ~5.8 MB) that render the huddled runner
+  // field flowing along the route. Demo 4's recording is a 3 KB stub with no
+  // runner field, so it does NOT show the race. Default to 3.
+  AUTO_DEMO: '3',
 };
