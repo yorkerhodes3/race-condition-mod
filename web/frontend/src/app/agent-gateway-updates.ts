@@ -283,7 +283,9 @@ class AgentGateway {
 
   private async loadProto(): Promise<void> {
     try {
-      const root = await protobuf.load('/gateway.proto');
+      // Base-href-relative so it resolves under a GitHub Pages subpath, at
+      // root, or behind a custom domain (see gateway.proto in public/).
+      const root = await protobuf.load('gateway.proto');
       this.Wrapper = root.lookupType('gateway.Wrapper');
       this.BroadcastRequest = root.lookupType('gateway.BroadcastRequest');
       // Connect the monitor socket once proto is ready
