@@ -450,8 +450,11 @@ export const DEMO_CONFIG: DemoConfigType = {
       },
     },
     recordingConfig: {
-      cachedMessageStreams: ['assets/sim-4-log.ndjson'],
-      timeScale: 1.5,
+      // Upstream shipped a 3 KB stub here (no runner data). Point "Debugging at
+      // scale" at the full 1,000-runner recording so it shows the dense field
+      // of runner agents flowing along the route (matches the keynote).
+      cachedMessageStreams: ['assets/1k-runners.ndjson'],
+      timeScale: 3,
     },
   },
   '5a': {
