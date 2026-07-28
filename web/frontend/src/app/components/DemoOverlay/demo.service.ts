@@ -88,6 +88,24 @@ export class DemoService implements OnDestroy {
   constructor() {
     window.addEventListener('keydown', this.onKeyDown);
     this.syncActiveDemoKeyForDebugDump();
+    this.maybeAutoStartDemo();
+  }
+
+  /**
+   * Optionally auto-run a demo on load so visitors see a race without pressing
+   * a hotkey. Source (in priority order): `?demo=<id>` query param, then
+   * `window.ENV.AUTO_DEMO` (config.js). A short delay lets the 3D scene settle
+   * before switching from the Sandbox intro.
+   */
+  private maybeAutoStartDemo(): void {
+    const fromQuery = new URLSearchParams(window.location.search).get('demo');
+    const fromEnv = (window as unknown as { ENV?: { AUTO_DEMO?: string } }).ENV?.AUTO_DEMO;
+    const raw = (fromQuery ?? fromEnv ?? '').trim();
+    if (!raw) return;
+    if (!(DEMO_IDS as readonly string[]).includes(raw)) return;
+    const id = raw as DemoId;
+    if (id === this.activeDemo()) return;
+    setTimeout(() => this.select(id), 2500);
   }
 
   ngOnDestroy() {
