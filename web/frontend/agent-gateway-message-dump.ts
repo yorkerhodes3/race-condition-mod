@@ -399,11 +399,13 @@ function findMarathonWallClockPacingIndices(
  * {@link shouldCollapseRunnerProcessTickReplayGap}) use **0 ms** so out-of-order capture timestamps do not inflate
  * wall-clock replay between `advance_tick` boundaries.
  *
- * When **both** endpoints are simulation-timed, the recorded delay is **greater** than one marathon tick wall
- * interval ({@link HARDCODED_SIM_TICK_INTERVAL_SEC}), **and** both lines fall between the first `fire_start_gun`
+ * When **either** endpoint is simulation-timed, the recorded delay is **greater** than one marathon tick wall
+ * interval ({@link HARDCODED_SIM_TICK_INTERVAL_SEC}), **and** the gap falls between the first `fire_start_gun`
  * and `check_race_complete` (`race_complete`) inclusive, the delay is replaced with that interval so cached
- * replay matches a non-recorded run; `timingScale` then applies to that synthetic gap. Outside that window,
- * long sim–sim gaps keep recorded timing.
+ * replay matches a non-recorded run. This collapses not only long sim–sim gaps but also the pause between the
+ * final runner `process_tick` burst and the `model_start`/`check_race_complete` wrap-up (a sim → non-sim gap
+ * that would otherwise leave the field frozen at the finish line). `timingScale` then applies to that synthetic
+ * gap. Outside that window, long gaps keep recorded timing.
  */
 export function parseAgentGatewayMsgNdjsonInterFrameReplayMeta(
   ndjsonText: string,
@@ -481,7 +483,11 @@ export function parseAgentGatewayMsgNdjsonInterFrameReplayMeta(
     let replacedSimTickCadence = false;
     const gapInsideMarathonWindow =
       marathonWindow !== null && i >= marathonWindow.start && i + 1 <= marathonWindow.end;
-    if (a.isSimTimed && b.isSimTimed && delay > tickIntervalMs && gapInsideMarathonWindow) {
+    // Collapse any long gap adjacent to a simulation-timed frame inside the marathon window to one
+    // tick interval. Requiring only ONE sim-timed endpoint (was: both) also compresses the sim → non-sim
+    // pause between the last process_tick and the race-complete wrap-up, which otherwise freezes the
+    // field at the finish line for the full recorded delay.
+    if ((a.isSimTimed || b.isSimTimed) && delay > tickIntervalMs && gapInsideMarathonWindow) {
       delay = tickIntervalMs;
       replacedSimTickCadence = true;
     }

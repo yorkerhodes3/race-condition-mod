@@ -40,11 +40,19 @@ export class AgentChatDisplayService {
   displayItems: DisplayItem[] = [];
   expandedToolCalls = new Set<number>();
   activeToolCalls = new Map<string, number>();
+  /**
+   * tool_end messages whose matching tool_start has not yet been seen. Some
+   * recordings capture the two frames out of order (e.g. demo 4's
+   * prepare_simulation), so we buffer the end and resolve the card when its
+   * start arrives. Keyed the same way as {@link activeToolCalls}.
+   */
+  private pendingToolEnds = new Map<string, ChatMessage>();
 
   clearForDemoReset(): void {
     this.displayItems = [];
     this.expandedToolCalls.clear();
     this.activeToolCalls.clear();
+    this.pendingToolEnds.clear();
   }
 
   toggleToolCall(idx: number): void {
@@ -194,6 +202,7 @@ export class AgentChatDisplayService {
       case AgentMessageType.TOOL_START:
         if (host.filterSettings.showToolCalls && msg.toolName) {
           const idx = this.displayItems.length;
+          const key = msg.toolName === 'load_skill' ? msg.skillName! : msg.toolName;
           this.addDisplayItem(host, {
             kind: 'tool_call',
             msg: {
@@ -202,10 +211,14 @@ export class AgentChatDisplayService {
               text: `tool start : ${msg.toolName}`,
             },
           });
-          this.activeToolCalls.set(
-            msg.toolName === 'load_skill' ? msg.skillName! : msg.toolName,
-            idx,
-          );
+          this.activeToolCalls.set(key, idx);
+          // If this tool's end was captured before its start (out-of-order
+          // recording), resolve the card immediately using the buffered end.
+          const bufferedEnd = this.pendingToolEnds.get(key);
+          if (bufferedEnd) {
+            this.pendingToolEnds.delete(key);
+            this.finishToolCall(host, bufferedEnd);
+          }
         }
 
         return;
@@ -250,11 +263,14 @@ export class AgentChatDisplayService {
         }
 
         if (host.filterSettings.showToolCalls) {
-          if (
-            (msg.toolName && this.activeToolCalls.has(msg.toolName)) ||
-            (msg.toolName === 'load_skill' && this.activeToolCalls.has(msg.skillName!))
-          )
+          const key = msg.toolName === 'load_skill' ? msg.skillName! : msg.toolName;
+          if (key && this.activeToolCalls.has(key)) {
             this.finishToolCall(host, msg);
+          } else if (msg.toolName) {
+            // tool_end arrived before its tool_start (out-of-order recording);
+            // buffer it so the start handler can resolve the card.
+            this.pendingToolEnds.set(key, msg);
+          }
           return;
         }
 
