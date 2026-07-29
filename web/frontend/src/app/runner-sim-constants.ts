@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
+import { getActiveRoute } from './scenarios/route';
+
 /**
  * Marathon simulation constants aligned with backend/agents/npc/runner_shared/constants.py
  */
 export const RUNNER_SPEED_SCALE = 6.2137;
-/** Official marathon distance in miles (matches backend MARATHON_MI). */
-export const MARATHON_DISTANCE_MI = 26.2188;
+/**
+ * Authoritative course distance in miles, sourced from the active Route Pack
+ * (scenarios/route.ts). For the default Vegas marathon this is the exact
+ * pre-refactor value 26.2188 (matches backend MARATHON_MI).
+ */
+export const MARATHON_DISTANCE_MI = getActiveRoute().distanceMi;
 /**
  * Default simulated-time compression for the viewport race clock.
  * Must match ViewportComponent.SIM_SPEED; overridden per-race via setSimDistanceIntegrator.
