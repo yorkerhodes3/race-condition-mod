@@ -15,6 +15,7 @@
  */
 
 import * as THREE from 'three';
+import { PoiType } from './scenarios/poi';
 
 export interface StationDef {
   id: number;
@@ -27,7 +28,7 @@ export type MedicalTentDef = StationDef;
 
 export interface StationZone {
   readonly id: number;
-  readonly stationType: 'water_station' | 'medical_tent' | 'crowd_zone' | 'portable_toilet';
+  readonly stationType: PoiType;
   readonly worldPos: THREE.Vector3;
   readonly radius: number;
   isInsideRadius(position: THREE.Vector3): boolean;
@@ -38,14 +39,14 @@ export type WaterStationZone = StationZone;
 /** Lightweight StationZone for collision detection only (no scene visuals). */
 export class SimpleStationZone implements StationZone {
   readonly id: number;
-  readonly stationType: 'water_station' | 'medical_tent' | 'crowd_zone' | 'portable_toilet';
+  readonly stationType: PoiType;
   readonly worldPos: THREE.Vector3;
   readonly radius: number;
   readonly kmMark: number;
 
   constructor(
     id: number,
-    type: 'water_station' | 'medical_tent' | 'crowd_zone' | 'portable_toilet',
+    type: PoiType,
     worldPos: THREE.Vector3,
     radius: number,
     kmMark = 0,
