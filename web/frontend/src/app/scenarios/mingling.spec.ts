@@ -53,7 +53,7 @@ describe('Mingling seam (P5 sim-parity guard)', () => {
   it('belief moves toward observation; noise perturbs truth within bounds', () => {
     expect(blendBelief(0.2, 1.0, 0.5)).toBeCloseTo(0.6, 10);
     expect(noisyObservation(0.5, 0.5, 1)).toBeCloseTo(1.0, 10);
-    expect(noisyObservation(0.5, 0.5, 0)).toBeCloseTo(0.25, 10);
+    expect(noisyObservation(0.5, 0.5, 0.25)).toBeCloseTo(0.25, 10);
     // Never leaves [0,1].
     expect(noisyObservation(0.9, 1, 1)).toBe(1);
     expect(noisyObservation(0.1, 1, 0)).toBe(0);
