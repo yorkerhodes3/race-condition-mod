@@ -188,6 +188,13 @@ assigned LineString — **no change to the interpolation core.**
 
 **Default.** `route_type:"marathon"` → today's single‑loop behavior.
 
+**Re‑routes (planned, decided 2026‑07‑29).** Agents may re‑select their corridor
+at decision points (forks / assembly points / checkpoints) when their current
+route becomes `blocked` (see 4.7). This is an **additive** engine capability,
+gated on having ≥2 candidate corridors. **Mariupol v1 defines a single route**,
+so re‑routing is a no‑op there — the capability lands first and real branching
+data follows. Vegas (one loop) is likewise unaffected.
+
 ### 4.3 Stopping‑location taxonomy (stations → shelters/aid/danger)
 
 **Idea.** Generalize the POI type union and its effects.
@@ -491,6 +498,10 @@ reuse frameworks instead of inventing them.
 
 - **Geometry availability.** Is there a usable Mariupol GLB, or do we extrude OSM?
   (Engine only needs a mesh + transform, so OSM extrusion is an acceptable P7 v1.)
+  *Decision (2026‑07‑29):* the second site is **Mariupol**; its route / POI /
+  hazard data and geometry are sourced from ETC's
+  [mariupol-evacuation-model](https://github.com/Ethical-Tech-CoLab/mariupol-evacuation-model)
+  (open, IHL‑anchored). Not vendored in this repo yet — P7 imports/adapts it.
 - **Vector‑dimension coupling.** Memory embeddings assume `VECTOR(3072)`; unrelated
   to scenarios but relevant when swapping embedding providers (see
   [docs/deployment-harnesses.md](deployment-harnesses.md)).

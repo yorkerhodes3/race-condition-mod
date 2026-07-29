@@ -24,6 +24,7 @@ import {
   RUNNER_DEFAULT_SIM_SPEED,
   RUNNER_SPEED_SCALE,
 } from './runner-sim-constants';
+import { getActiveGroupModel, type GroupRole } from './scenarios/group';
 import { DNF_RUNNER_EMOJIS, LOW_VITALS_EMOJIS, RUNNER_EMOJIS } from '../constants';
 
 const _perpScratch = new THREE.Vector3();
@@ -44,6 +45,12 @@ export interface RunnerConfig {
   mesh?: THREE.Mesh;
   /** Override for the perpendicular sideways offset. Defaults to small jitter for dot meshes. */
   sidewaysOffset?: number;
+  /** Group this agent belongs to (household/cluster). Defaults to the agent itself (no group). */
+  groupId?: string;
+  /** Role within the group. Defaults to 'adult'. */
+  groupRole?: GroupRole;
+  /** How tightly this agent paces to its slowest group member, [0,1]. Defaults to the active scenario's model (0 = independent for Vegas). */
+  cohesionTarget?: number;
 }
 
 export type RunnerStatus = 'running' | 'finished' | 'did-not-finish';
@@ -73,6 +80,13 @@ export class Runner {
   readonly color: string;
   water = 100;
   working = false;
+
+  /** Group membership (household/cluster); `guid` when this agent is its own group. */
+  readonly groupId: string;
+  /** Role within the group. */
+  readonly groupRole: GroupRole;
+  /** Cohesion strength in [0,1]; 0 = independent (own pace), the Vegas default. */
+  readonly cohesionTarget: number;
 
   private insideStations = new Set<number>();
   private lastMilestoneMi = 0;
@@ -113,6 +127,9 @@ export class Runner {
     this.distanceMi = Math.min(MARATHON_DISTANCE_MI, Math.max(0, config.distanceMi ?? 0));
     this.t = MARATHON_DISTANCE_MI > 0 ? this.distanceMi / MARATHON_DISTANCE_MI : 0;
     this.rawMph = this.effectiveMph;
+    this.groupId = config.groupId ?? guid;
+    this.groupRole = config.groupRole ?? 'adult';
+    this.cohesionTarget = config.cohesionTarget ?? getActiveGroupModel().defaultCohesionTarget;
     this.totalLength = config.path.getTotalLength();
     this.scene = config.scene;
     this.broadcastFn = config.broadcastFn;
