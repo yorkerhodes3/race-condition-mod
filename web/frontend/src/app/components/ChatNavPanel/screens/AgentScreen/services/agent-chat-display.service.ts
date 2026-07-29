@@ -263,10 +263,10 @@ export class AgentChatDisplayService {
         }
 
         if (host.filterSettings.showToolCalls) {
-          const key = msg.toolName === 'load_skill' ? msg.skillName! : msg.toolName;
+          const key = msg.toolName === 'load_skill' ? msg.skillName : msg.toolName;
           if (key && this.activeToolCalls.has(key)) {
             this.finishToolCall(host, msg);
-          } else if (msg.toolName) {
+          } else if (key) {
             // tool_end arrived before its tool_start (out-of-order recording);
             // buffer it so the start handler can resolve the card.
             this.pendingToolEnds.set(key, msg);
