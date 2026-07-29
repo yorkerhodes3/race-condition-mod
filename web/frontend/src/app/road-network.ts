@@ -16,14 +16,13 @@
 
 import * as THREE from 'three';
 import { GLB_TRANSFORM } from './glb-roads';
+import { MAP_CENTER_LAT, MAP_CENTER_LON } from './viewport/config';
 import { TrafficSimulator } from './traffic-simulator';
 import { CarSimulator } from './car-simulator';
 
 // ── Coordinate conversion ───────────────────────────────────────────────────
 
 const R_EARTH = 6378137;
-const MAP_CENTER_LAT = 36.1085;
-const MAP_CENTER_LON = -115.1769;
 
 const CX = (MAP_CENTER_LON * Math.PI / 180) * R_EARTH;
 const CY = Math.log(Math.tan(Math.PI / 4 + (MAP_CENTER_LAT * Math.PI / 180) / 2)) * R_EARTH;

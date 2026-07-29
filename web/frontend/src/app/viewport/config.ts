@@ -15,6 +15,7 @@
  */
 
 import * as THREE from 'three';
+import { getActiveSite } from '../scenarios/site';
 
 /** Tweakable fog far-plane distance; mutated by the Tweakpane debug panel. */
 export const baseFog = { far: 9000 };
@@ -23,7 +24,8 @@ export const baseFog = { far: 9000 };
 export const lightOffset = new THREE.Vector3(-6000, 5000, 5000);
 
 // ── Map center ──────────────────────────────────────────────────────────────
-// Set these to the lat/lon that should appear at the origin of the 3D world.
-// Adjust to align imported paths with the GLB road mesh.
-export const MAP_CENTER_LAT =  36.1085;
-export const MAP_CENTER_LON = -115.1769;
+// The lat/lon that appears at the origin of the 3D world, sourced from the
+// active Site Pack (scenarios/site.ts). For the default Vegas scenario these are
+// the exact pre-refactor values 36.1085 / -115.1769.
+export const MAP_CENTER_LAT = getActiveSite().mapCenter.lat;
+export const MAP_CENTER_LON = getActiveSite().mapCenter.lon;

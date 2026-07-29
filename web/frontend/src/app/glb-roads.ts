@@ -16,6 +16,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { getActiveSite } from './scenarios/site';
 
 export interface GLBRoadsTransform {
   scale: number;
@@ -25,13 +26,9 @@ export interface GLBRoadsTransform {
   rotationY: number;
 }
 
-export const GLB_TRANSFORM: GLBRoadsTransform = {
-  scale: .1,
-  offsetX: 40,
-  offsetY: 0,
-  offsetZ: -10,
-  rotationY: 0,
-};
+// Sourced from the active Site Pack (scenarios/site.ts). For the default Vegas
+// scenario these are the exact pre-refactor values { .1, 40, 0, -10, 0 }.
+export const GLB_TRANSFORM: GLBRoadsTransform = getActiveSite().glbTransform;
 
 export class GLBRoadsLoader {
   private scene: THREE.Scene;

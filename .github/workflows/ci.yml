@@ -90,6 +90,13 @@ jobs:
           npm ci
           npm run build
 
+      - name: Test Frontend
+        # Pure, dependency-light unit tests (no WebGL/DOM) that guard scenario /
+        # theme parity across the marathon->evacuation refactor. node_modules is
+        # already installed by the Build Frontend step above.
+        working-directory: web/frontend
+        run: npm run test:vitest
+
       - name: Build Admin Dashboard
         working-directory: web/admin-dash
         run: |

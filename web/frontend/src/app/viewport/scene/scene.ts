@@ -20,6 +20,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { Context } from '../context';
 import { baseFog } from '../config';
+import { getActiveSite } from '../../scenarios/site';
 import { createHeightFogMaterial } from '../shaders/height-fog-shader';
 import { createWindowMaterial } from '../shaders/window-shader';
 import { createRoadsMaterial } from '../shaders/road-shader';
@@ -216,7 +217,7 @@ export async function initModel(ctx: Context): Promise<void> {
   const gltfLoader = new GLTFLoader().setPath('assets/');
   gltfLoader.setMeshoptDecoder(MeshoptDecoder as any);
 
-  const [gltf] = await Promise.all([gltfLoader.loadAsync('models/Google_LasVegas_Export_v32.glb')]);
+  const [gltf] = await Promise.all([gltfLoader.loadAsync(getActiveSite().glbPath)]);
 
   gltf.scene.scale.set(1, 1, 1);
   ctx.scene.add(gltf.scene);
