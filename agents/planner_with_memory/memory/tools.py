@@ -64,9 +64,15 @@ def _route_to_dict(route: PlannedRoute) -> dict:
 #   - "alloydb_ai" (default): AlloyDB's ai.embedding() extension does it in SQL.
 #   - "vertex_ai": compute client-side via google-genai and pass as $N::vector.
 #     Required for OSS Cloud SQL / local Postgres (no ai.embedding extension).
+#   - "azure" / "local" / "openai": also client-side, computed via LiteLLM
+#     (Azure OpenAI or any OpenAI-compatible / vLLM server). Normalized to the
+#     "vertex_ai" client-side path here; the concrete provider is selected inside
+#     compute_embedding(). Enables the Azure / GPU-server deployment harnesses.
 # Auto-derived to "vertex_ai" when USE_ALLOYDB=false.
 def _resolve_embedding_backend() -> str:
     backend = os.environ.get("EMBEDDING_BACKEND", "").lower()
+    if backend in ("azure", "local", "openai"):
+        return "vertex_ai"
     if backend:
         return backend
     return "vertex_ai" if os.environ.get("USE_ALLOYDB", "true").lower() == "false" else "alloydb_ai"

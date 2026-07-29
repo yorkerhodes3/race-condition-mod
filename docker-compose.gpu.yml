@@ -1,0 +1,93 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# GPU model-plane overlay for the "GPU-Server" deployment harness.
+#
+# Adds a self-hosted, OpenAI-compatible inference plane so BOTH chat completion
+# (RUNNER_MODEL) and embeddings (EMBEDDING_BACKEND=local) run on your own GPU,
+# with no cloud account. Pair it with deploy/harness/profiles/gpu.env, which
+# points RUNNER_MODEL / OPENAI_API_BASE / LOCAL_EMBEDDING_URL at these services.
+#
+# Usage (default = vLLM):
+#   set -a; . deploy/harness/profiles/gpu.env; set +a
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml \
+#       up -d pubsub redis postgres vllm
+#
+# Usage (Ollama instead of vLLM):
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml \
+#       --profile ollama up -d pubsub redis postgres ollama
+#   # then in gpu.env set: RUNNER_MODEL=ollama_chat/gemma4:e4b
+#   #                      OLLAMA_API_BASE=http://ollama:11434
+#
+# Requires the NVIDIA Container Toolkit on the host (nvidia-ctk / --gpus all).
+# See docs/deployment-harnesses.md §4.3.
+
+services:
+  # --- vLLM: OpenAI-compatible /v1 for chat + embeddings (default) ---
+  vllm:
+    image: vllm/vllm-openai:latest
+    # Serve a small instruction model by default; override MODEL to taste. vLLM
+    # exposes /v1/chat/completions and /v1/embeddings on this port.
+    command:
+      - "--model=${VLLM_MODEL:-google/gemma-2-2b-it}"
+      - "--port=8000"
+      - "--gpu-memory-utilization=${VLLM_GPU_MEM_UTIL:-0.85}"
+      - "--max-model-len=${VLLM_MAX_MODEL_LEN:-8192}"
+    environment:
+      # HF_TOKEN is only needed for gated models; leave empty otherwise.
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
+    ports:
+      - "9114:8000"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+
+  # --- Ollama: lighter-weight alternative model plane (opt-in profile) ---
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "9115:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  hf-cache:
+  ollama-models:
