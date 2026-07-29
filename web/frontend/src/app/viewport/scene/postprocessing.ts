@@ -26,6 +26,7 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { Context } from '../context';
 import { DepthOutlineShader } from '../shaders/depth-outline-shader';
 import { VignetteColorShader } from '../shaders/vignette-shader';
+import { getActiveTheme } from '../../scenarios/theme';
 
 export function initPostProcessing(ctx: Context): void {
   const w = window.innerWidth,
@@ -99,7 +100,13 @@ export function initPostProcessing(ctx: Context): void {
   ctx.composer.addPass(ctx.depthOutlinePass);
 
   // Bloom
-  ctx.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.12, 0.5, 0.02);
+  const bloom = getActiveTheme().bloom;
+  ctx.bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(w, h),
+    bloom.strength,
+    bloom.radius,
+    bloom.threshold,
+  );
   ctx.composer.addPass(ctx.bloomPass);
 
   // LUT

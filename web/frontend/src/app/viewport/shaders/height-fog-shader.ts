@@ -15,6 +15,7 @@
  */
 
 import * as THREE from 'three';
+import { getActiveTheme } from '../../scenarios/theme';
 
 /**
  * Building base material with height-based fog, emissive window tiling,
@@ -36,7 +37,7 @@ export function createHeightFogMaterial(): THREE.ShaderMaterial {
         heightFogFar:               { value: 0.0 },
         heightFogDensity:           { value: 0.75 },
         emissiveMap:                { value: null },
-        emissiveColor:              { value: new THREE.Color(0xB0BCBF) },
+        emissiveColor:              { value: new THREE.Color(getActiveTheme().windowGlowColor) },
         emissiveIntensity:          { value: 0.5 },
         emissiveRepeat:             { value: new THREE.Vector2(30, 30) },
         normalFogOnEmissiveDensity: { value: 0.2 },

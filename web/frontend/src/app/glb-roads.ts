@@ -17,6 +17,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { getActiveSite } from './scenarios/site';
+import { getActiveTheme } from './scenarios/theme';
 
 export interface GLBRoadsTransform {
   scale: number;
@@ -56,8 +57,9 @@ export class GLBRoadsLoader {
                 if (mat) {
                   mat.side = THREE.DoubleSide;
                   if ('emissive' in mat) {
-                    (mat as THREE.MeshStandardMaterial).emissive = new THREE.Color(0x334455);
-                    (mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.4;
+                    const emissive = getActiveTheme().roadEmissive;
+                    (mat as THREE.MeshStandardMaterial).emissive = new THREE.Color(emissive.color);
+                    (mat as THREE.MeshStandardMaterial).emissiveIntensity = emissive.intensity;
                   }
                 }
               });
