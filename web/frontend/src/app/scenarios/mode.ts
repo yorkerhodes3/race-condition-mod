@@ -100,9 +100,21 @@ export const VEGAS_FOOT_ONLY: MovementModeModel = {
   defaultMode: 'foot',
 };
 
+/**
+ * Mariupol mixed (P7) — most evacuees on foot, with buses on the corridor where
+ * permitted. Opt-in via `?movement=mariupol-mixed`; Vegas is unaffected.
+ */
+export const MARIUPOL_MIXED: MovementModeModel = {
+  id: 'mariupol-mixed',
+  name: 'Foot + bus (corridor)',
+  enabledModes: ['foot', 'bus'],
+  defaultMode: 'foot',
+};
+
 /** Registry of known movement-mode models. */
 export const MOVEMENT_MODE_MODELS: Readonly<Record<string, MovementModeModel>> = {
   [VEGAS_FOOT_ONLY.id]: VEGAS_FOOT_ONLY,
+  [MARIUPOL_MIXED.id]: MARIUPOL_MIXED,
 };
 
 export const DEFAULT_MOVEMENT_MODE_MODEL_ID = 'vegas-foot';

@@ -61,9 +61,21 @@ export const VEGAS_NO_GROUPS: GroupCohesionModel = {
   defaultCohesionTarget: 0,
 };
 
+/**
+ * Mariupol households (P7) — families evacuate together and pace to their
+ * slowest member, so cohesion is high. Opt-in via `?groups=mariupol-households`;
+ * Vegas is unaffected.
+ */
+export const MARIUPOL_HOUSEHOLDS: GroupCohesionModel = {
+  id: 'mariupol-households',
+  name: 'Households (siege)',
+  defaultCohesionTarget: 0.85,
+};
+
 /** Registry of known group-cohesion models. */
 export const GROUP_MODELS: Readonly<Record<string, GroupCohesionModel>> = {
   [VEGAS_NO_GROUPS.id]: VEGAS_NO_GROUPS,
+  [MARIUPOL_HOUSEHOLDS.id]: MARIUPOL_HOUSEHOLDS,
 };
 
 export const DEFAULT_GROUP_MODEL_ID = 'vegas-independent';

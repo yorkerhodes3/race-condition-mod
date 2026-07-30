@@ -68,9 +68,24 @@ export const VEGAS_NEON_THEME: Theme = {
   windowGlowColor: 0xb0bcbf,
 };
 
+/**
+ * Mariupol siege — a muted, low-glow tone for the schematic evacuation scenario
+ * (P7). Deliberately un-festive: minimal bloom and dim, cold emissives (the
+ * legible danger/route/shelter coloring lives on the POI markers, not the city
+ * tone). Opt-in via `?theme=mariupol-siege`; Vegas is unaffected.
+ */
+export const MARIUPOL_SIEGE_THEME: Theme = {
+  id: 'mariupol-siege',
+  name: 'Mariupol Siege (schematic)',
+  bloom: { strength: 0.0, radius: 0.4, threshold: 0.1 },
+  roadEmissive: { color: 0x3a3f45, intensity: 0.15 },
+  windowGlowColor: 0x6b7378,
+};
+
 /** Registry of known themes. Additional themes (e.g. evac-muted) register here. */
-const THEMES: Record<string, Theme> = {
+export const THEMES: Record<string, Theme> = {
   [VEGAS_NEON_THEME.id]: VEGAS_NEON_THEME,
+  [MARIUPOL_SIEGE_THEME.id]: MARIUPOL_SIEGE_THEME,
 };
 
 /** Fallback theme when nothing is selected or an unknown id is requested. */

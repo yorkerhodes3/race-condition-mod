@@ -16,7 +16,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { Context } from '../context';
 import { baseFog } from '../config';
@@ -217,10 +217,28 @@ export async function initModel(ctx: Context): Promise<void> {
   const gltfLoader = new GLTFLoader().setPath('assets/');
   gltfLoader.setMeshoptDecoder(MeshoptDecoder as any);
 
-  const [gltf] = await Promise.all([gltfLoader.loadAsync(getActiveSite().glbPath)]);
+  // A Site may omit its city GLB (e.g. a schematic scenario with no
+  // photogrammetry mesh). Load it when present; otherwise render schematically
+  // (ground, routes, POIs) without a city mesh. The Vegas site always has a GLB,
+  // so its render is unchanged.
+  const site = getActiveSite();
+  let gltf: GLTF | null = null;
+  if (site.glbPath) {
+    try {
+      [gltf] = await Promise.all([gltfLoader.loadAsync(site.glbPath)]);
+    } catch (err) {
+      console.warn(
+        `[scene] city GLB '${site.glbPath}' failed to load; rendering schematic (no city mesh)`,
+        err,
+      );
+      gltf = null;
+    }
+  }
 
-  gltf.scene.scale.set(1, 1, 1);
-  ctx.scene.add(gltf.scene);
+  if (gltf) {
+    gltf.scene.scale.set(1, 1, 1);
+    ctx.scene.add(gltf.scene);
+  }
 
   const windows = await ctx.textureLoader.loadAsync('assets/textures/windows.png');
   windows.wrapS = THREE.RepeatWrapping;
@@ -256,6 +274,9 @@ export async function initModel(ctx: Context): Promise<void> {
     depthWrite: false,
   });
 
+  // No city mesh (schematic site): shared materials are ready; skip the
+  // per-mesh material wiring that a city GLB would need.
+  if (!gltf) return;
   gltf.scene.traverse((child) => {
     const mesh = child as THREE.Mesh;
     if (!mesh.isMesh) return;

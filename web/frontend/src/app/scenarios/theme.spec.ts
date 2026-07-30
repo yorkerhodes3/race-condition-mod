@@ -22,6 +22,8 @@
 import { describe, it, expect } from 'vitest';
 import { VEGAS_NEON_THEME, getActiveTheme, DEFAULT_THEME_ID } from './theme';
 
+import { MARIUPOL_SIEGE_THEME, THEMES } from './theme';
+
 describe('Vegas neon Theme Pack (P1 render-parity guard)', () => {
   it('preserves the pre-refactor bloom parameters', () => {
     expect(VEGAS_NEON_THEME.bloom).toEqual({ strength: 0.12, radius: 0.5, threshold: 0.02 });
@@ -38,5 +40,10 @@ describe('Vegas neon Theme Pack (P1 render-parity guard)', () => {
   it('defaults to the neon theme when no override is present', () => {
     expect(DEFAULT_THEME_ID).toBe('vegas-neon');
     expect(getActiveTheme().id).toBe('vegas-neon');
+  });
+
+  it('registers the Mariupol siege theme and keeps Vegas default', () => {
+    expect(THEMES['mariupol-siege']).toBe(MARIUPOL_SIEGE_THEME);
+    expect(MARIUPOL_SIEGE_THEME.bloom.strength).toBe(0);
   });
 });

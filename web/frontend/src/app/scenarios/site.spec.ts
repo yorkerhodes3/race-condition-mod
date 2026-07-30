@@ -23,6 +23,8 @@
 import { describe, it, expect } from 'vitest';
 import { VEGAS_SITE, getActiveSite, DEFAULT_SITE_ID } from './site';
 
+import { MARIUPOL_SITE, SITES } from './site';
+
 describe('Vegas Site Pack (P0 render-parity guard)', () => {
   it('preserves the pre-refactor geographic anchor', () => {
     expect(VEGAS_SITE.mapCenter.lat).toBe(36.1085);
@@ -47,5 +49,11 @@ describe('Vegas Site Pack (P0 render-parity guard)', () => {
     expect(DEFAULT_SITE_ID).toBe('vegas');
     expect(getActiveSite().id).toBe('vegas');
     expect(getActiveSite().name).toBe('Las Vegas');
+  });
+
+  it('registers the Mariupol site (schematic, no GLB) and keeps Vegas default', () => {
+    expect(SITES['mariupol']).toBe(MARIUPOL_SITE);
+    expect(MARIUPOL_SITE.mapCenter).toEqual({ lat: 47.0958, lon: 37.5497 });
+    expect(MARIUPOL_SITE.glbPath).toBeUndefined();
   });
 });

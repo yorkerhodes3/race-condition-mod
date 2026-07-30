@@ -26,6 +26,8 @@ import {
   DEFAULT_ROUTE_ID,
 } from './route';
 
+import { MARIUPOL_CORRIDOR_ROUTE, ROUTES } from './route';
+
 describe('Vegas marathon Route Pack (P3 render/sim-parity guard)', () => {
   it('preserves the exact pre-refactor course distance', () => {
     expect(VEGAS_MARATHON_ROUTE.distanceMi).toBe(26.2188);
@@ -41,5 +43,11 @@ describe('Vegas marathon Route Pack (P3 render/sim-parity guard)', () => {
     expect(DEFAULT_ROUTE_ID).toBe('vegas-marathon');
     expect(getActiveRoute().id).toBe('vegas-marathon');
     expect(getActiveRoute().distanceMi).toBe(26.2188);
+  });
+
+  it('registers the Mariupol corridor and keeps Vegas default', () => {
+    expect(ROUTES['mariupol-corridor']).toBe(MARIUPOL_CORRIDOR_ROUTE);
+    expect(MARIUPOL_CORRIDOR_ROUTE.routeType).toBe('evacuation');
+    expect(MARIUPOL_CORRIDOR_ROUTE.closedLoop).toBe(false);
   });
 });

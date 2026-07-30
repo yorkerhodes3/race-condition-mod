@@ -29,6 +29,8 @@ import {
   FOOT_PROFILE,
 } from './mode';
 
+import { MARIUPOL_MIXED, MOVEMENT_MODE_MODELS } from './mode';
+
 describe('Movement-mode seam (P6 sim-parity guard)', () => {
   it('defaults Vegas to a single foot mode (the marathon)', () => {
     expect(VEGAS_FOOT_ONLY.enabledModes).toEqual(['foot']);
@@ -53,5 +55,10 @@ describe('Movement-mode seam (P6 sim-parity guard)', () => {
     // Foot is the only pedestrian (non-road-restricted) mode.
     expect(FOOT_PROFILE.roadsOnly).toBe(false);
     expect(FOOT_PROFILE.capacity).toBe(1);
+  });
+
+  it('registers the Mariupol mixed mode (foot+bus) and keeps Vegas default', () => {
+    expect(MOVEMENT_MODE_MODELS['mariupol-mixed']).toBe(MARIUPOL_MIXED);
+    expect(MARIUPOL_MIXED.enabledModes).toEqual(['foot', 'bus']);
   });
 });

@@ -137,3 +137,34 @@ Must hold before P7 ships:
 3. Wire danger zones + single corridor; keep groups/mingling/mode at conservative
    defaults; add a Mariupol golden-run signature.
 4. Ethics review sign-off (§5) before making Mariupol the default or publicizing.
+
+## 8. Status (updated 2026-07-30)
+
+**Done — Mariupol scaffolding is in the seam registries (render-identical Vegas).**
+Opt-in via `?scenario=mariupol` (and the matching `theme/route/groups/mingle/
+movement` ids); Vegas remains the default and is byte-identical (existing parity
+guards still pass).
+
+- `scenarios/site.ts` — `MARIUPOL_SITE` (anchor 47.0958/37.5497, **no GLB yet →
+  schematic**). `viewport/scene/scene.ts` now loads the city GLB only when a site
+  provides one, so a schematic site renders without crashing.
+- `scenarios/theme.ts` — `MARIUPOL_SIEGE_THEME` (muted, low-glow).
+- `scenarios/route.ts` — `MARIUPOL_CORRIDOR_ROUTE` (`evacuation`/`corridor`,
+  single, non-loop; `distanceMi` estimated 141).
+- `scenarios/group.ts` — `MARIUPOL_HOUSEHOLDS` (cohesion 0.85).
+- `scenarios/mingling.ts` — `MARIUPOL_SIEGE_MINGLING` (dwell + `infoNoise` 0.4).
+- `scenarios/mode.ts` — `MARIUPOL_MIXED` (foot + bus).
+- `testing/golden-run.ts` — `MARIUPOL_GOLDEN_CONFIG` + a deterministic signature
+  guard distinct from Vegas.
+- `public/console.html` — the Operator Console lists all Mariupol ids.
+
+**Still gated (needs data/licensing + ethics sign-off before it truly renders):**
+1. **City mesh** — produce the OSM-extruded GLB from `mariupol_lights.json` and
+   set `MARIUPOL_SITE.glbPath` (until then Mariupol is schematic — no buildings).
+2. **Corridor geometry + danger zones** — real `routes.geojson` (single corridor
+   polyline) and `pois.geojson` (UNOSAT damage → danger zones); today the route
+   is metadata-only (the rendered path still comes from the gateway/cached
+   routes).
+3. **Licensing** of UNOSAT/ACLED/OSM/VIIRS data before vendoring (§6).
+4. **Ethics review sign-off** (§5) — **blocking** before Mariupol is made a
+   default, published, or shown with real data.

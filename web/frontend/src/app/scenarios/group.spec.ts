@@ -27,6 +27,8 @@ import {
   cohesionSpeedFactor,
 } from './group';
 
+import { MARIUPOL_HOUSEHOLDS, GROUP_MODELS } from './group';
+
 describe('Group cohesion seam (P4 sim-parity guard)', () => {
   it('defaults Vegas to independent runners with zero cohesion', () => {
     expect(VEGAS_NO_GROUPS.defaultCohesionTarget).toBe(0);
@@ -50,5 +52,10 @@ describe('Group cohesion seam (P4 sim-parity guard)', () => {
     expect(cohesionSpeedFactor(0.5, 8, 4)).toBeCloseTo(0.75, 10);
     // A member no slower than self never speeds you up past your own pace.
     expect(cohesionSpeedFactor(1, 8, 12)).toBe(1);
+  });
+
+  it('registers the Mariupol households model and keeps Vegas default', () => {
+    expect(GROUP_MODELS['mariupol-households']).toBe(MARIUPOL_HOUSEHOLDS);
+    expect(MARIUPOL_HOUSEHOLDS.defaultCohesionTarget).toBe(0.85);
   });
 });

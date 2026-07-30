@@ -32,8 +32,8 @@
  * miss.
  */
 import { RUNNER_DEFAULT_SIM_SPEED } from '../runner-sim-constants';
-import { VEGAS_MARATHON_ROUTE } from '../scenarios/route';
-import { VEGAS_NO_GROUPS, cohesionSpeedFactor } from '../scenarios/group';
+import { VEGAS_MARATHON_ROUTE, MARIUPOL_CORRIDOR_ROUTE } from '../scenarios/route';
+import { VEGAS_NO_GROUPS, MARIUPOL_HOUSEHOLDS, cohesionSpeedFactor } from '../scenarios/group';
 
 /** Same integrator the Runner uses by default: simulated-distance per real second. */
 export const GOLDEN_INTEGRATOR = RUNNER_DEFAULT_SIM_SPEED / 3600;
@@ -72,6 +72,23 @@ export const VEGAS_GOLDEN_CONFIG: GoldenRunConfig = {
   distanceMi: VEGAS_MARATHON_ROUTE.distanceMi,
   minMph: 4,
   maxMph: 11,
+};
+
+/**
+ * Mariupol evacuation profile (P7): the long single corridor with high household
+ * cohesion. Deterministic signature distinct from Vegas; guards the Mariupol
+ * route distance + cohesion default.
+ */
+export const MARIUPOL_GOLDEN_CONFIG: GoldenRunConfig = {
+  seed: 0x1a2b3c4d,
+  agents: 64,
+  groupSize: 4,
+  ticks: 40,
+  dtSeconds: 1,
+  cohesionTarget: MARIUPOL_HOUSEHOLDS.defaultCohesionTarget,
+  distanceMi: MARIUPOL_CORRIDOR_ROUTE.distanceMi,
+  minMph: 2,
+  maxMph: 13,
 };
 
 /** Deterministic 32-bit PRNG (mulberry32). Returns floats in [0, 1). */

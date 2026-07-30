@@ -58,9 +58,24 @@ export const VEGAS_NO_MINGLING: MinglingModel = {
   infoNoise: 0,
 };
 
+/**
+ * Mariupol siege information (P7) — evacuees dwell at decision points and act on
+ * noisy, uncertain reports of which corridor is open (grounds ETC's
+ * India-EvacSimulation / Evac-Sim-Melanie). Values are synthetic starting
+ * points. Opt-in via `?mingle=mariupol-siege`; Vegas is unaffected.
+ */
+export const MARIUPOL_SIEGE_MINGLING: MinglingModel = {
+  id: 'mariupol-siege',
+  name: 'Siege information (noisy)',
+  defaultMingle: 0.6,
+  defaultDwellTicks: 2,
+  infoNoise: 0.4,
+};
+
 /** Registry of known mingling models. */
 export const MINGLING_MODELS: Readonly<Record<string, MinglingModel>> = {
   [VEGAS_NO_MINGLING.id]: VEGAS_NO_MINGLING,
+  [MARIUPOL_SIEGE_MINGLING.id]: MARIUPOL_SIEGE_MINGLING,
 };
 
 export const DEFAULT_MINGLING_MODEL_ID = 'vegas-none';

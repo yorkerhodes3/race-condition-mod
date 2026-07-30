@@ -65,9 +65,26 @@ export const VEGAS_MARATHON_ROUTE: RouteProfile = {
   distanceMi: 26.2188,
 };
 
+/**
+ * Mariupol humanitarian corridor (P7) — a single directed evacuation route
+ * away from the besieged city toward a safe destination (Mariupol →
+ * Zaporizhzhia is ~227 km). `distanceMi` is a documented estimate pending the
+ * georeferenced corridor polyline (see docs/P7-MARIUPOL-PREP.md). Opt-in via
+ * `?route=mariupol-corridor`; Vegas is unaffected.
+ */
+export const MARIUPOL_CORRIDOR_ROUTE: RouteProfile = {
+  id: 'mariupol-corridor',
+  name: 'Mariupol humanitarian corridor',
+  routeType: 'evacuation',
+  role: 'corridor',
+  closedLoop: false,
+  distanceMi: 141.0,
+};
+
 /** Registry of known routes. */
 export const ROUTES: Readonly<Record<string, RouteProfile>> = {
   [VEGAS_MARATHON_ROUTE.id]: VEGAS_MARATHON_ROUTE,
+  [MARIUPOL_CORRIDOR_ROUTE.id]: MARIUPOL_CORRIDOR_ROUTE,
 };
 
 export const DEFAULT_ROUTE_ID = 'vegas-marathon';

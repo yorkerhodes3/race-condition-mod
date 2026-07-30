@@ -29,6 +29,8 @@ import {
   noisyObservation,
 } from './mingling';
 
+import { MARIUPOL_SIEGE_MINGLING, MINGLING_MODELS } from './mingling';
+
 describe('Mingling seam (P5 sim-parity guard)', () => {
   it('defaults Vegas to no mingling (all zero)', () => {
     expect(VEGAS_NO_MINGLING.defaultMingle).toBe(0);
@@ -57,5 +59,10 @@ describe('Mingling seam (P5 sim-parity guard)', () => {
     // Never leaves [0,1].
     expect(noisyObservation(0.9, 1, 1)).toBe(1);
     expect(noisyObservation(0.1, 1, 0)).toBe(0);
+  });
+
+  it('registers the Mariupol siege mingling model and keeps Vegas default', () => {
+    expect(MINGLING_MODELS['mariupol-siege']).toBe(MARIUPOL_SIEGE_MINGLING);
+    expect(MARIUPOL_SIEGE_MINGLING.infoNoise).toBe(0.4);
   });
 });

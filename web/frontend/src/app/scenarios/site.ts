@@ -56,8 +56,12 @@ export interface Site {
   name: string;
   /** Lat/lon placed at the world origin; drives the Mercator projection. */
   mapCenter: GeoAnchor;
-  /** City GLB path, relative to the GLTF loader's `assets/` base path. */
-  glbPath: string;
+  /**
+   * City GLB path, relative to the GLTF loader's `assets/` base path. Optional:
+   * a schematic site (no photogrammetry mesh) omits it and renders without a
+   * city mesh (see viewport/scene/scene.ts initModel).
+   */
+  glbPath?: string;
   /** World-space transform applied to the loaded city/roads mesh. */
   glbTransform: SiteGlbTransform;
 }
@@ -77,9 +81,25 @@ export const VEGAS_SITE: Site = {
   glbTransform: { scale: 0.1, offsetX: 40, offsetY: 0, offsetZ: -10, rotationY: 0 },
 };
 
+/**
+ * Mariupol — the evacuation twin's second site (P7). Anchored on the city center
+ * (ETC mariupol-evacuation-model uses 47.10°N, 37.55°E; see
+ * docs/P7-MARIUPOL-PREP.md). `glbPath` is intentionally omitted until an
+ * OSM-extruded city mesh is produced and its source data licensing is cleared,
+ * so the scenario renders schematically for now. Opt-in via `?scenario=mariupol`;
+ * it is never the default, and Vegas is unaffected.
+ */
+export const MARIUPOL_SITE: Site = {
+  id: 'mariupol',
+  name: 'Mariupol',
+  mapCenter: { lat: 47.0958, lon: 37.5497 },
+  glbTransform: { scale: 1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+};
+
 /** Registry of known sites. Additional scenarios register here in later phases. */
-const SITES: Record<string, Site> = {
+export const SITES: Record<string, Site> = {
   [VEGAS_SITE.id]: VEGAS_SITE,
+  [MARIUPOL_SITE.id]: MARIUPOL_SITE,
 };
 
 /** Fallback scenario when nothing is selected or an unknown id is requested. */

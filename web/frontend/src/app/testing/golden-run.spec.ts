@@ -21,9 +21,10 @@
  * expected to update the pinned signature on purpose.
  */
 import { describe, it, expect } from 'vitest';
-import { VEGAS_MARATHON_ROUTE } from '../scenarios/route';
+import { VEGAS_MARATHON_ROUTE, MARIUPOL_CORRIDOR_ROUTE } from '../scenarios/route';
 import {
   VEGAS_GOLDEN_CONFIG,
+  MARIUPOL_GOLDEN_CONFIG,
   simulateGoldenRun,
   goldenRunSignature,
 } from './golden-run';
@@ -73,5 +74,17 @@ describe('golden-run harness', () => {
     const base = goldenRunSignature(VEGAS_GOLDEN_CONFIG);
     const changed = goldenRunSignature({ ...VEGAS_GOLDEN_CONFIG, cohesionTarget: 1 });
     expect(base).not.toBe(changed);
+  });
+
+  it('Mariupol profile is deterministic, bounded by its corridor, and distinct from Vegas', () => {
+    const finals = simulateGoldenRun(MARIUPOL_GOLDEN_CONFIG);
+    expect(finals).toEqual(simulateGoldenRun(MARIUPOL_GOLDEN_CONFIG));
+    for (const d of finals) {
+      expect(d).toBeGreaterThanOrEqual(0);
+      expect(d).toBeLessThanOrEqual(MARIUPOL_CORRIDOR_ROUTE.distanceMi);
+    }
+    expect(goldenRunSignature(MARIUPOL_GOLDEN_CONFIG)).not.toBe(
+      goldenRunSignature(VEGAS_GOLDEN_CONFIG),
+    );
   });
 });
