@@ -1,0 +1,158 @@
+<!--
+  Copyright 2026 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Race Condition — Operator Console</title>
+    <link rel="stylesheet" href="console.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Race Condition · Operator Console</h1>
+      </div>
+      <div class="statusstrip" id="statusstrip">
+        <span class="chip" id="stMode">Mode: —</span>
+        <span class="chip" id="stActiveDemo">Demo: —</span>
+        <span class="chip" id="stLink" title="Effective deep link">Link: —</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- ── Configurator ─────────────────────────────────────────── -->
+      <aside class="panel config" aria-label="Configurator">
+        <h2>Configurator</h2>
+
+        <label class="field">
+          <span>Demo</span>
+          <select id="demo">
+            <option value="">(auto — use AUTO_DEMO)</option>
+            <option value="Sandbox">00 · Sandbox</option>
+            <option value="1">01 · Build agents with Agent Platform</option>
+            <option value="2">02 · Creating multi-agent systems</option>
+            <option value="3">03 · Enhancing agents with memory</option>
+            <option value="4">04 · Debugging at scale</option>
+            <option value="5a">5a · Intent to infrastructure (Cloud Assist)</option>
+            <option value="5b">5b · Intent to infrastructure (Upgraded)</option>
+            <option value="7a">7a · Securing agents</option>
+            <option value="7b">7b · Securing agents (Secure)</option>
+          </select>
+        </label>
+
+        <h3>Scenario seams</h3>
+        <p class="hint">All default to Las Vegas today; more options appear as
+          scenarios (e.g. Mariupol) are added. Changing a seam reloads the demo.</p>
+
+        <label class="field">
+          <span>Site</span>
+          <select id="scenario" data-param="scenario">
+            <option value="">(default · vegas)</option>
+            <option value="vegas">vegas</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Theme</span>
+          <select id="theme" data-param="theme">
+            <option value="">(default · vegas-neon)</option>
+            <option value="vegas-neon">vegas-neon</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Route</span>
+          <select id="route" data-param="route">
+            <option value="">(default · vegas-marathon)</option>
+            <option value="vegas-marathon">vegas-marathon</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Groups</span>
+          <select id="groups" data-param="groups">
+            <option value="">(default · vegas-independent)</option>
+            <option value="vegas-independent">vegas-independent</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Mingling</span>
+          <select id="mingle" data-param="mingle">
+            <option value="">(default · vegas-none)</option>
+            <option value="vegas-none">vegas-none</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Movement</span>
+          <select id="movement" data-param="movement">
+            <option value="">(default · vegas-foot)</option>
+            <option value="vegas-foot">vegas-foot</option>
+          </select>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" id="debug" />
+          <span>Debug mode (<code>?debug=true</code>) — reveals debug race + Look-dev panels</span>
+        </label>
+
+        <div class="actions">
+          <button class="primary" id="apply">Apply &amp; reload</button>
+          <button id="open">Open in new tab</button>
+          <button id="copy">Copy deep link</button>
+        </div>
+        <code class="deeplink" id="deeplink"></code>
+      </aside>
+
+      <!-- ── Live demo environment ────────────────────────────────── -->
+      <section class="panel stage-wrap" aria-label="Demo environment">
+        <div class="stage-head">
+          <h2>Demo environment</h2>
+          <div class="livebtns">
+            <button data-cmd="camera" data-val="A" title="Cinematic Camera A">Cam A</button>
+            <button data-cmd="camera" data-val="B" title="Cinematic Camera B">Cam B</button>
+            <button data-cmd="camera" data-val="C" title="Cinematic Camera C">Cam C</button>
+            <button data-cmd="toggleCached" title="Cached ↔ Live replay (Ctrl+L)">Toggle mode</button>
+            <button data-cmd="togglePanels" title="Alternative panels (Ctrl+D)">Panels</button>
+            <button class="warn" data-cmd="reset" title="Reset current demo (Ctrl+R)">Reset</button>
+          </div>
+        </div>
+        <iframe id="stage" title="Race Condition demo" allow="fullscreen"></iframe>
+      </section>
+    </main>
+
+    <!-- ── Reference (also in docs/CONSOLE-REFERENCE.md) ──────────── -->
+    <details class="ref">
+      <summary>Keyboard &amp; URL reference</summary>
+      <div class="refgrid">
+        <div>
+          <h4>Shortcuts (hold Ctrl)</h4>
+          <ul>
+            <li><kbd>Ctrl</kbd>+<kbd>0..4</kbd> load demo · <kbd>Ctrl</kbd>+<kbd>5</kbd>/<kbd>Shift</kbd>+<kbd>5</kbd> → 5a/5b · <kbd>Ctrl</kbd>+<kbd>7</kbd>/<kbd>Shift</kbd>+<kbd>7</kbd> → 7a/7b</li>
+            <li><kbd>Ctrl</kbd>+<kbd>A</kbd>/<kbd>S</kbd>/<kbd>D</kbd> cameras · <kbd>Ctrl</kbd>+<kbd>R</kbd> reset · <kbd>Ctrl</kbd>+<kbd>L</kbd> mode · <kbd>Ctrl</kbd>+<kbd>I</kbd> intro</li>
+          </ul>
+        </div>
+        <div>
+          <h4>URL params</h4>
+          <ul>
+            <li><code>?demo=</code> <code>?debug=true</code> <code>?loading=true</code></li>
+            <li><code>?scenario ?theme ?route ?groups ?mingle ?movement</code></li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <script src="console.js"></script>
+  </body>
+</html>

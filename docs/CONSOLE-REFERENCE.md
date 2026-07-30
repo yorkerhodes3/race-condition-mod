@@ -9,6 +9,11 @@ hidden behind a keystroke or insider knowledge. Two parts:
 
 > Live site: https://yorkerhodes3.github.io/race-condition-mod/ · runs in
 > **Cached mode** (recorded races replay client-side; no backend needed).
+>
+> **Operator Console:** an interactive version of everything below ships at
+> [`/console.html`](../web/frontend/public/console.html)
+> (live: https://yorkerhodes3.github.io/race-condition-mod/console.html) — a
+> configurator + embedded demo + live controls + current-state readout.
 
 ---
 

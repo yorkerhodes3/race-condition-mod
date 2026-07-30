@@ -85,8 +85,65 @@ export class DemoService implements OnDestroy {
     }
   };
 
+  /**
+   * Same-origin control bridge for the Operator Console (public/console.html).
+   * Accepts a small whitelist of commands via `postMessage` and triggers the
+   * exact same actions as the keyboard shortcuts — no new behavior, just remote
+   * triggers. Cross-origin and unrecognised messages are ignored.
+   */
+  private onConsoleMessage = (e: MessageEvent): void => {
+    if (e.origin !== window.location.origin) return;
+    const d = e.data as { source?: string; action?: string; value?: string } | null;
+    if (!d || d.source !== 'race-console' || typeof d.action !== 'string') return;
+    switch (d.action) {
+      case 'selectDemo':
+        if (d.value && (DEMO_IDS as readonly string[]).includes(d.value)) {
+          this.select(d.value as DemoId);
+        }
+        break;
+      case 'reset':
+        this.reset.update((n) => n + 1);
+        break;
+      case 'toggleCached':
+        this.cachedMessagesToggle.update((n) => n + 1);
+        break;
+      case 'togglePanels':
+        this.showAlternativePanels.set(!this.showAlternativePanels());
+        break;
+      case 'camera': {
+        const label = (d.value ?? '').toUpperCase();
+        const index = { A: 0, B: 1, C: 2 }[label];
+        if (index !== undefined) {
+          window.dispatchEvent(
+            new CustomEvent('filter:changed', {
+              detail: { id: 'camera', value: `Camera ${label}`, index },
+            }),
+          );
+        }
+        break;
+      }
+      case 'getState': {
+        const target = e.source as WindowProxy | null;
+        try {
+          target?.postMessage(
+            {
+              source: 'race-app',
+              activeDemo: this.activeDemo(),
+              altPanels: this.showAlternativePanels(),
+            },
+            e.origin,
+          );
+        } catch {
+          /* ignore */
+        }
+        break;
+      }
+    }
+  };
+
   constructor() {
     window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('message', this.onConsoleMessage);
     this.syncActiveDemoKeyForDebugDump();
     this.maybeAutoStartDemo();
   }
@@ -110,6 +167,7 @@ export class DemoService implements OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('message', this.onConsoleMessage);
     if (this.modeSwitchLabelClearTimer !== undefined) {
       clearTimeout(this.modeSwitchLabelClearTimer);
       this.modeSwitchLabelClearTimer = undefined;
