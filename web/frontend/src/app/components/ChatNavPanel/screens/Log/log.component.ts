@@ -28,6 +28,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { GatewayService, ChatMessage } from '../../../../gateway.service';
+import { reword, genericToolName, getActiveCopy } from '../../../../scenarios/copy';
 import { DemoService } from '../../../DemoOverlay/demo.service';
 import { DEMO_CONFIG } from '../../../../demo-config';
 
@@ -170,10 +171,17 @@ export class LogComponent implements OnInit, OnDestroy {
     const trimmedSpeaker = msg.speaker.split(' ')[0];
 
     if (msg.msgType === 'tool_end' && msg.toolName === 'advance_tick') {
-      return this.logSpeakerDict['advance_tick'];
+      return this.relabelParticipant(this.logSpeakerDict['advance_tick']);
     } else {
-      return this.logSpeakerDict[trimmedSpeaker as keyof typeof this.speakerDict] || 'AGENT';
+      return this.relabelParticipant(
+        this.logSpeakerDict[trimmedSpeaker as keyof typeof this.speakerDict] || 'AGENT',
+      );
     }
+  }
+
+  /** Map the generic 'RUNNER' category label to the active scenario's participant term. */
+  private relabelParticipant(label: string): string {
+    return label === 'RUNNER' ? getActiveCopy().participantTitle.toUpperCase() : label;
   }
 
   getSpeakerDisplayName(speaker: string) {
@@ -293,8 +301,8 @@ export class LogComponent implements OnInit, OnDestroy {
       return `👤 <strong>You:</strong> ${(msg.text || '').substring(0, 120)}`;
     }
     const t = msg.msgType;
-    const text = msg.text || '';
-    const tool = msg.toolName || '';
+    const text = reword(msg.text || '');
+    const tool = genericToolName(msg.toolName || '');
     const truncate = (s: string, n = 100) => s.substring(0, n) + (s.length > n ? '…' : '');
 
     switch (t) {

@@ -65,11 +65,16 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
   const t = site.glbTransform;
   const project = makeProjector(site.mapCenter, t.scale, t.offsetX, t.offsetZ);
   const scale = t.scale;
+  addGround(ctx);
+  let bounds: Bounds | null = null;
 
   if (site.data.buildingsUrl) {
     try {
       const buildings = parseBuildings(await fetchJson(site.data.buildingsUrl));
-      if (buildings.length) addBuildings(ctx, buildings, project, scale);
+      if (buildings.length) {
+        addBuildings(ctx, buildings, project, scale);
+        bounds = boundsOf(buildings, project);
+      }
     } catch (err) {
       console.warn('[schematic-site] buildings failed', err);
     }
@@ -92,6 +97,58 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
       console.warn('[schematic-site] POIs failed', err);
     }
   }
+
+  // Point the camera at the city so the schematic is actually in frame (there is
+  // no city GLB or demo camera to do it). If a demo later runs, it takes over.
+  if (bounds) frameSchematic(ctx, bounds);
+}
+
+interface Bounds {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
+function boundsOf(buildings: Building[], project: Projector): Bounds {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const b of buildings) {
+    const { x, z } = project(b.lon, b.lat);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { minX, maxX, minZ, maxZ };
+}
+
+function frameSchematic(ctx: Context, b: Bounds): void {
+  const cx = (b.minX + b.maxX) / 2;
+  const cz = (b.minZ + b.maxZ) / 2;
+  const span = Math.max(b.maxX - b.minX, b.maxZ - b.minZ, 40);
+  const r = span * 0.85;
+  ctx.cameraFollow = null;
+  ctx.camera.position.set(cx + r * 0.9, r * 1.1, cz + r * 0.9);
+  ctx.camera.lookAt(cx, 0, cz);
+  if (ctx.controls) {
+    ctx.controls.target.set(cx, 0, cz);
+    ctx.controls.update();
+  }
+}
+
+function addGround(ctx: Context): void {
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(20000, 20000),
+    new THREE.MeshStandardMaterial({ color: 0x11151b, roughness: 1, metalness: 0 }),
+  );
+  ground.name = 'schematic-ground';
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.05;
+  ground.receiveShadow = true;
+  ctx.scene.add(ground);
 }
 
 function addBuildings(
@@ -101,7 +158,13 @@ function addBuildings(
   scale: number,
 ): void {
   const geo = new THREE.BoxGeometry(1, 1, 1);
-  const mat = new THREE.MeshStandardMaterial({ color: 0x2b3038, roughness: 0.95, metalness: 0 });
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x5b6470,
+    emissive: 0x171b21,
+    emissiveIntensity: 1,
+    roughness: 0.9,
+    metalness: 0,
+  });
   const mesh = new THREE.InstancedMesh(geo, mat, buildings.length);
   mesh.name = 'schematic-buildings';
   mesh.castShadow = true;

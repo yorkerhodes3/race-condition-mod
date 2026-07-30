@@ -28,6 +28,7 @@ import {
   HARDCODED_SIM_TICK_INTERVAL_SEC,
   HARDCODED_SIM_TOTAL_RACE_HOURS,
 } from '../../../../../runner-sim-constants';
+import { getActiveCopy } from '../../../../../scenarios/copy';
 
 @Component({
   selector: 'simulation-panel',
@@ -39,7 +40,7 @@ import {
     <div class="sim-panel-wrapper">
       <div class="simulation-running-panel">
         <div class="top-bar">
-          <h1>Simulation progress</h1>
+          <h1>{{ copy.hudTitle }}</h1>
           <button class="expand-btn sim" (click)="expand.emit()">
             <span class="material-icons">unfold_more</span>
           </button>
@@ -62,17 +63,17 @@ import {
         <div class="distance">
           <div class="stat">
             <p class="value">{{ averageDistance | number : '1.1-1' }}</p>
-            <p class="label">AVG. DISTANCE <span>(miles)</span></p>
+            <p class="label">{{ copy.distanceLabel }} <span>(miles)</span></p>
           </div>
         </div>
         <div class="statistics">
           <div class="stat">
             <p class="value" [countUp]="numberOfFinishers"></p>
-            <p class="label">RACE FINISHERS</p>
+            <p class="label">{{ copy.finishersLabel }}</p>
           </div>
           <div class="stat">
             <p class="value">{{ averagePace }}</p>
-            <p class="label">AVG. PACE <span>(min/mile)</span></p>
+            <p class="label">{{ copy.paceLabel }} <span>(min/mile)</span></p>
           </div>
         </div>
         <div class="button-container">
@@ -88,6 +89,7 @@ import {
   `,
 })
 export class SimulationPanelComponent {
+  readonly copy = getActiveCopy();
   @Input() simulationProgress = 0;
   @Input() averageDistance: number | string = 0;
   @Input() numberOfFinishers = 0;

@@ -37,6 +37,7 @@
       groups: 'vegas-independent',
       mingle: 'vegas-none',
       movement: 'vegas-foot',
+      demo: '',
     },
     mariupol: {
       scenario: 'mariupol',
@@ -45,6 +46,7 @@
       groups: 'mariupol-households',
       mingle: 'mariupol-siege',
       movement: 'mariupol-mixed',
+      demo: 'none',
     },
   };
 
@@ -147,6 +149,7 @@
       var el = $(SEAM_IDS[i]);
       if (el && preset[SEAM_IDS[i]] !== undefined) el.value = preset[SEAM_IDS[i]];
     }
+    if (preset.demo !== undefined) $('demo').value = preset.demo;
     refreshDeepLink();
     renderCard();
   }
