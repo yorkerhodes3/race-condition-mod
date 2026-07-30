@@ -21,6 +21,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { Context } from '../context';
 import { baseFog } from '../config';
 import { getActiveSite } from '../../scenarios/site';
+import { buildSchematicSite } from './schematic-site';
 import { createHeightFogMaterial } from '../shaders/height-fog-shader';
 import { createWindowMaterial } from '../shaders/window-shader';
 import { createRoadsMaterial } from '../shaders/road-shader';
@@ -274,9 +275,13 @@ export async function initModel(ctx: Context): Promise<void> {
     depthWrite: false,
   });
 
-  // No city mesh (schematic site): shared materials are ready; skip the
-  // per-mesh material wiring that a city GLB would need.
-  if (!gltf) return;
+  // No city mesh (schematic site): shared materials are ready. Build the
+  // schematic world (buildings / corridor / POIs) from the site's data instead
+  // of wiring per-mesh materials for a city GLB.
+  if (!gltf) {
+    await buildSchematicSite(ctx);
+    return;
+  }
   gltf.scene.traverse((child) => {
     const mesh = child as THREE.Mesh;
     if (!mesh.isMesh) return;

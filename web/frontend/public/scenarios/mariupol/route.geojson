@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_type": "evacuation",
+        "role": "corridor",
+        "from": "city_center",
+        "to": "safe_exit_nw",
+        "modes": ["foot", "bus"],
+        "name": "Mariupol humanitarian corridor (representative)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [37.5497, 47.0958],
+          [37.535, 47.101],
+          [37.515, 47.109],
+          [37.49, 47.12],
+          [37.455, 47.135],
+          [37.41, 47.158]
+        ]
+      }
+    }
+  ]
+}

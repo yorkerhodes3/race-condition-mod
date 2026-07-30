@@ -64,6 +64,21 @@ export interface Site {
   glbPath?: string;
   /** World-space transform applied to the loaded city/roads mesh. */
   glbTransform: SiteGlbTransform;
+  /**
+   * Optional schematic data sources for a site with no city GLB (P7). When set,
+   * the renderer builds buildings/corridor/POIs from these instead of a mesh.
+   */
+  data?: SiteData;
+}
+
+/** Data sources for a schematic (GLB-less) site (P7). Paths are fetched relative to the app base. */
+export interface SiteData {
+  /** JSON of building footprints (`{lon,lat,height}` or `{centroid:[lon,lat]}`). */
+  buildingsUrl?: string;
+  /** GeoJSON FeatureCollection containing the evacuation corridor LineString. */
+  routeUrl?: string;
+  /** GeoJSON FeatureCollection of POI Points (danger_zone / shelter / …). */
+  poisUrl?: string;
 }
 
 /**
@@ -93,7 +108,12 @@ export const MARIUPOL_SITE: Site = {
   id: 'mariupol',
   name: 'Mariupol',
   mapCenter: { lat: 47.0958, lon: 37.5497 },
-  glbTransform: { scale: 1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  glbTransform: { scale: 0.1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  data: {
+    buildingsUrl: 'scenarios/mariupol/buildings.json',
+    routeUrl: 'scenarios/mariupol/route.geojson',
+    poisUrl: 'scenarios/mariupol/pois.geojson',
+  },
 };
 
 /** Registry of known sites. Additional scenarios register here in later phases. */

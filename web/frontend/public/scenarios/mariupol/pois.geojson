@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "assembly_point", "name": "Muster point — city center" },
+      "geometry": { "type": "Point", "coordinates": [37.5497, 47.0958] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "danger_zone", "name": "Damaged district (east)", "radius": 350 },
+      "geometry": { "type": "Point", "coordinates": [37.561, 47.092] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "danger_zone", "name": "Damaged district (south)", "radius": 300 },
+      "geometry": { "type": "Point", "coordinates": [37.548, 47.086] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "shelter", "name": "Shelter — school (west)" },
+      "geometry": { "type": "Point", "coordinates": [37.534, 47.103] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "shelter", "name": "Shelter — civic hall (northwest)" },
+      "geometry": { "type": "Point", "coordinates": [37.5, 47.115] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "checkpoint", "name": "Corridor checkpoint" },
+      "geometry": { "type": "Point", "coordinates": [37.455, 47.135] }
+    }
+  ]
+}

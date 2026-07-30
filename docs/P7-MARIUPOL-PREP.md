@@ -168,3 +168,27 @@ guards still pass).
 3. **Licensing** of UNOSAT/ACLED/OSM/VIIRS data before vendoring (§6).
 4. **Ethics review sign-off** (§5) — **blocking** before Mariupol is made a
    default, published, or shown with real data.
+
+## 9. Wired (updated 2026-07-30)
+
+Ethics/data-sensitivity sign-off received. The **schematic render pipeline is now
+wired** and Mariupol renders (opt-in) without a GLB:
+
+- `scenarios/geo.ts` — pure, tested projection (`makeProjector`) + defensive
+  GeoJSON/building parsing (`parseBuildings` / `parseCorridor` / `parsePois`).
+- `scenarios/site.ts` — `Site.data` (`buildingsUrl` / `routeUrl` / `poisUrl`);
+  `MARIUPOL_SITE.data` points at the pack files.
+- `viewport/scene/schematic-site.ts` — builds extruded building blocks, the
+  amber corridor tube, and colored POI markers (danger=red / shelter=green /
+  assembly=amber / checkpoint=blue). Called from `initModel` only when a site
+  has no GLB; Vegas never calls it.
+- `public/scenarios/mariupol/` — **representative synthetic** `buildings.json`
+  (144 footprints), `route.geojson` (one corridor), `pois.geojson` (6 POIs), and
+  a provenance `README.md`.
+
+**Remaining = a data drop-in (no code change):** overwrite the three pack files
+with real, appropriately-licensed ETC data (OSM centroids → `buildings.json`,
+UNOSAT damage → `pois.geojson`, georeferenced corridor → `route.geojson`) and,
+for a true skyline, add an OSM-extruded GLB and set `MARIUPOL_SITE.glbPath`.
+Camera framing for the Mariupol scale may need a visual pass on the deployed
+site (the fly cameras were tuned for Vegas).
