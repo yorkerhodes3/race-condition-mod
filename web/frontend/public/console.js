@@ -28,6 +28,42 @@
 
   var SEAM_IDS = ['scenario', 'theme', 'route', 'groups', 'mingle', 'movement'];
 
+  // Base settings per scenario. Selecting a preset sets every seam field to these.
+  var SCENARIO_PRESETS = {
+    vegas: {
+      scenario: 'vegas',
+      theme: 'vegas-neon',
+      route: 'vegas-marathon',
+      groups: 'vegas-independent',
+      mingle: 'vegas-none',
+      movement: 'vegas-foot',
+    },
+    mariupol: {
+      scenario: 'mariupol',
+      theme: 'mariupol-siege',
+      route: 'mariupol-corridor',
+      groups: 'mariupol-households',
+      mingle: 'mariupol-siege',
+      movement: 'mariupol-mixed',
+    },
+  };
+
+  // Right-panel card content, keyed by the active Site id.
+  var SCENARIO_CARDS = {
+    vegas:
+      '<span class="sc-badge sc-vegas">Marathon</span>' +
+      '<h3>Las Vegas Strip Marathon</h3>' +
+      '<p>A 26.2-mile neon-night loop with ~10,000 runners — the original ' +
+      'festive scenario.</p>',
+    mariupol:
+      '<span class="sc-badge sc-mariupol">Evacuation</span>' +
+      '<h3>Mariupol Evacuation</h3>' +
+      '<p>Schematic evacuation twin: a single humanitarian corridor out of the ' +
+      'city, households moving together, and danger / shelter zones. ' +
+      '<em>Representative synthetic data — retrospective planning &amp; ' +
+      'education, not operational.</em></p>',
+  };
+
   var $ = function (id) {
     return document.getElementById(id);
   };
@@ -103,7 +139,23 @@
     $('stMode').textContent = 'Mode: ' + mode;
     $('stActiveDemo').textContent = 'Demo: ' + active;
   }
+  // Apply a scenario preset to every seam field.
+  function applyPreset(key) {
+    var preset = SCENARIO_PRESETS[key];
+    if (!preset) return;
+    for (var i = 0; i < SEAM_IDS.length; i++) {
+      var el = $(SEAM_IDS[i]);
+      if (el && preset[SEAM_IDS[i]] !== undefined) el.value = preset[SEAM_IDS[i]];
+    }
+    refreshDeepLink();
+    renderCard();
+  }
 
+  // Render the right-panel scenario card from the active Site selection.
+  function renderCard() {
+    var site = $('scenario').value || 'vegas';
+    $('scenarioCard').innerHTML = SCENARIO_CARDS[site] || SCENARIO_CARDS.vegas;
+  }
   // ── Wiring ────────────────────────────────────────────────────────────────
   function init() {
     $('apply').addEventListener('click', apply);
@@ -140,6 +192,20 @@
       if (el) el.addEventListener('change', refreshDeepLink);
     }
 
+    // Scenario preset applies base settings to every seam field at once.
+    $('preset').addEventListener('change', function () {
+      if ($('preset').value) applyPreset($('preset').value);
+    });
+    // Editing any seam by hand drops back to "custom" and refreshes the card.
+    for (var k = 0; k < SEAM_IDS.length; k++) {
+      var se = $(SEAM_IDS[k]);
+      if (se)
+        se.addEventListener('change', function () {
+          $('preset').value = '';
+          renderCard();
+        });
+    }
+
     // Optional live-state reply from the app bridge.
     window.addEventListener('message', function (e) {
       if (e.origin !== window.location.origin) return;
@@ -151,6 +217,7 @@
 
     // Seed the initial state, load the app with defaults, and start polling.
     refreshDeepLink();
+    renderCard();
     stage.src = appBaseUrl().href;
     setInterval(pollState, 1500);
     setInterval(function () {

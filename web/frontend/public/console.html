@@ -40,6 +40,17 @@
         <h2>Configurator</h2>
 
         <label class="field">
+          <span>Scenario preset</span>
+          <select id="preset">
+            <option value="">— custom —</option>
+            <option value="vegas">Las Vegas · Marathon</option>
+            <option value="mariupol">Mariupol · Evacuation</option>
+          </select>
+        </label>
+        <p class="hint">Selecting a scenario sets every field below to that
+          scenario's base settings; you can still tweak individual fields.</p>
+
+        <label class="field">
           <span>Demo</span>
           <select id="demo">
             <option value="">(auto — use AUTO_DEMO)</option>
@@ -129,11 +140,12 @@
             <button data-cmd="camera" data-val="A" title="Cinematic Camera A">Cam A</button>
             <button data-cmd="camera" data-val="B" title="Cinematic Camera B">Cam B</button>
             <button data-cmd="camera" data-val="C" title="Cinematic Camera C">Cam C</button>
-            <button data-cmd="toggleCached" title="Cached ↔ Live replay (Ctrl+L)">Toggle mode</button>
+            <button data-cmd="toggleCached" title="Switch the event stream between Cached (recorded replay) and Live (backend gateway). Offline demos have no live backend. Same as Ctrl+L.">Cached ⇄ Live</button>
             <button data-cmd="togglePanels" title="Alternative panels (Ctrl+D)">Panels</button>
             <button class="warn" data-cmd="reset" title="Reset current demo (Ctrl+R)">Reset</button>
           </div>
         </div>
+        <div class="scenario-card" id="scenarioCard"></div>
         <iframe id="stage" title="Race Condition demo" allow="fullscreen"></iframe>
       </section>
     </main>

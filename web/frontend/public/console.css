@@ -252,6 +252,51 @@ button.warn:hover {
   font-size: 12px;
 }
 
+/* ── Scenario card ── */
+.scenario-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel-2), rgba(0, 0, 0, 0.2));
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.scenario-card h3 {
+  margin: 6px 0 4px;
+  font-size: 15px;
+}
+
+.scenario-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scenario-card em {
+  color: var(--warn);
+  font-style: normal;
+}
+
+.sc-badge {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+}
+
+.sc-vegas {
+  color: #ffd36b;
+  border-color: rgba(255, 211, 107, 0.5);
+}
+
+.sc-mariupol {
+  color: var(--ok);
+  border-color: rgba(53, 224, 138, 0.5);
+}
+
 #stage {
   flex: 1;
   width: 100%;
