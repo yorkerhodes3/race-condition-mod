@@ -2030,7 +2030,7 @@ export class ViewportComponent implements OnInit, OnDestroy {
           this.cameraTopRoute();
           break;
         case 3:
-          this.cameraWalk();
+          void this.cameraWalk();
           break;
       }
     }
@@ -2170,21 +2170,43 @@ export class ViewportComponent implements OnInit, OnDestroy {
   private applySchematicCam(mode: 'origin' | 'overview' | 'top'): boolean {
     const pose = schematicPose(this.ctx, mode);
     if (!pose) return false;
+    this._walkArmGen++; // cancel any walk that is still gliding into place
     this.ctx.schematicWalk = null;
     void this.panCameraTo(pose.target, pose.offset);
     return true;
   }
 
+  private _walkArmGen = 0;
+  private readonly WALK_EYE = 8;
+
   /**
-   * "Walk the evacuation route" — ride the corridor curve at eye height,
-   * looking ahead, so the operator can inspect rubble / safety / where to place
-   * aid + water along the journey. Schematic-only; no-op on Vegas.
+   * "Walk the evacuation route" — glide from the current view down to eye level
+   * at the route start (a smooth transition, not a jolt), then ride the corridor
+   * curve looking ahead so the operator can inspect buildings / rubble / safety
+   * and where to place aid + water. Schematic-only; no-op on Vegas.
    */
-  public cameraWalk(): void {
-    if (!this.ctx.schematicCorridorCurve) return;
+  public async cameraWalk(): Promise<void> {
+    const curve = this.ctx.schematicCorridorCurve;
+    if (!curve) return;
+    const gen = ++this._walkArmGen;
+    this.ctx.schematicWalk = null;
     if (this.ctx.cameraFollow) stopFollowMesh(this.ctx);
     this.cancelPostFinishSequence();
-    this.ctx.cameraPan = null;
+
+    // Glide to the eye-level start pose. The pan's end pose is byte-identical to
+    // tickSchematicWalk's t=0 pose, so the handoff to walking is seamless.
+    const eye = this.WALK_EYE;
+    const start = curve.getPointAt(0);
+    const ahead = curve.getPointAt(Math.min(0.02, 0.999));
+    const target = new THREE.Vector3(ahead.x, eye, ahead.z);
+    const camPos = new THREE.Vector3(start.x, eye + 4, start.z);
+    await this.panCameraTo(target, camPos.clone().sub(target), {
+      minDuration: 2.0,
+      maxDuration: 3.5,
+    });
+
+    // Bail if another camera was chosen while gliding in.
+    if (gen !== this._walkArmGen || this._destroyed) return;
     this.ctx.controls.enabled = false;
     this.ctx.schematicWalk = { t: 0, speed: 0.02 };
   }
@@ -2196,7 +2218,7 @@ export class ViewportComponent implements OnInit, OnDestroy {
     if (!walk || !curve) return;
     walk.t += walk.speed * delta;
     if (walk.t >= 1) walk.t = 0;
-    const eye = 8;
+    const eye = this.WALK_EYE;
     const ahead = Math.min(walk.t + 0.02, 0.999);
     const p = curve.getPointAt(walk.t);
     const look = curve.getPointAt(ahead);
