@@ -42,8 +42,15 @@ describe('Scenario Copy Pack (P7)', () => {
     expect(MARIUPOL_COPY.participantPlural).toBe('evacuees');
     expect(MARIUPOL_COPY.hudTitle).toBe('Evacuation progress');
     expect(MARIUPOL_COPY.finishersLabel).toBe('EVACUEES SAFE');
-    expect(rewordWith('10,000 runners', MARIUPOL_COPY)).toBe('10,000 evacuees');
+    // The cached expected-participant count (10,000) maps to the real exposed
+    // population, and "runners" → "evacuees".
+    expect(rewordWith('10,000 runners', MARIUPOL_COPY)).toBe('37,663 evacuees');
     expect(rewordWith('Runner 12', MARIUPOL_COPY)).toBe('Evacuee 12');
+    // Cached marathon card values map to captured Mariupol data (item 1).
+    expect(rewordWith('Las Vegas Boulevard', MARIUPOL_COPY)).toBe(
+      'Central Corridor · Zones 1–2 → Exit West',
+    );
+    expect(rewordWith('Total distance 26.2 miles', MARIUPOL_COPY)).toBe('Total distance 227 km');
     expect(rewordWith('They crossed the finish line!', MARIUPOL_COPY)).toBe(
       'They reached safety!',
     );

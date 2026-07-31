@@ -140,6 +140,12 @@ export interface SitePoi {
   name?: string;
   /** Optional influence radius in meters (danger zones). */
   radius?: number;
+  /** Cohort zone id / tag for origin zones, e.g. 'Z1' / 'mariupol-z1'. */
+  zoneId?: string;
+  tag?: string;
+  /** Cohort size, so agents can be weighted per origin zone. */
+  population?: number;
+  vulnerable?: number;
 }
 
 /** Parse GeoJSON Point features into typed POIs. */
@@ -161,6 +167,10 @@ export function parsePois(geojson: unknown): SitePoi[] {
     const poi: SitePoi = { type: type as string, lon: lon as number, lat: lat as number };
     if (typeof props['name'] === 'string') poi.name = props['name'];
     if (isNum(props['radius'])) poi.radius = props['radius'] as number;
+    if (typeof props['zone_id'] === 'string') poi.zoneId = props['zone_id'];
+    if (typeof props['tag'] === 'string') poi.tag = props['tag'];
+    if (isNum(props['population'])) poi.population = props['population'] as number;
+    if (isNum(props['vulnerable'])) poi.vulnerable = props['vulnerable'] as number;
     out.push(poi);
   }
   return out;

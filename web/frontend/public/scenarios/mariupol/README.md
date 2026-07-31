@@ -1,17 +1,35 @@
-# Mariupol Site Pack data (representative / synthetic)
+# Mariupol Site Pack data (mixed: captured stats + synthetic geometry)
 
-These files back the schematic Mariupol scenario (`?scenario=mariupol`). They are
-**representative synthetic data**, authored in-repo for the simulation's
-geometry — **not** real building footprints, damage assessments, or corridor
-coordinates.
+These files back the schematic Mariupol scenario (`?scenario=mariupol`). The
+**zone cohort statistics are captured real figures** (see below); the
+**geometry** (building footprints, exact zone placements, corridor coordinates)
+is still **representative** — positioned around the city anchor for the schematic,
+not surveyed.
 
 | File | What it is |
 |---|---|
 | `buildings.json` | A synthetic grid of ~144 building footprints (`{lon,lat,height}`) around the city anchor, for the schematic block skyline. |
-| `route.geojson` | One representative evacuation-corridor `LineString` (city center → northwest exit). |
-| `pois.geojson` | A handful of representative `Point` POIs: assembly point, danger zones, shelters, a corridor checkpoint. |
+| `route.geojson` | One representative evacuation-corridor `LineString` (EXIT WEST → Zaporizhzhia direction). |
+| `pois.geojson` | Zone/corridor POIs: the **five real emergency-zone cohorts** (with captured population/vulnerable/child/elderly/disabled + damage/dark/destroyed and a `tag`), plus EXIT WEST, the Zaporizhzhia destination, Bezimenne filtration, Azovstal, and a shelter. |
 
-## Replacing with real data (gated)
+## Captured (real) data now in the pack
+
+The zone cohorts in `pois.geojson` and `src/app/scenarios/mariupol-data.ts` are
+**transcribed real figures** from the ETC / Christine Lumen
+`mariupol-evacuation-model` "Data-Driven Evacuation Analysis" (Late Mar–Apr 2022)
+and the 16 Mar 2022 severity model:
+
+- **Five emergency zones** summing to the published **37,663 exposed** /
+  **16,102 vulnerable** (Zone 5's child/elderly/disabled split is estimated to
+  its exact vulnerable total; the source row is truncated).
+- Scenario facts: severity **0.54** (Phase 3/5), pre-siege pop **343,598**,
+  **~16%** damaged, **22%** lights, **783** UNOSAT points, **45,544** buildings,
+  corridor **227 km** to Zaporizhzhia (in-city Dijkstra route **7.0 km**).
+
+Still synthetic/geometry-only: `buildings.json` footprints and the exact zone
+lon/lat placements (positioned around the anchor for the schematic, not surveyed).
+
+## Replacing the remaining synthetic geometry (gated)
 
 The engine consumes generic shapes (see `scenarios/geo.ts`), so real,
 appropriately-licensed data can drop in **without code changes** by overwriting

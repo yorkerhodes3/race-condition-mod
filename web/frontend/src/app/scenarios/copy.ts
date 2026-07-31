@@ -28,6 +28,7 @@
  * cached recordings bake the original wording into their log text.
  */
 import { getActiveSite } from './site';
+import { MARIUPOL_FACTS } from './mariupol-data';
 
 export interface ScenarioCopy {
   readonly id: string;
@@ -55,6 +56,16 @@ export interface ScenarioCopy {
   readonly routeName: string;
   /** Plan card title, e.g. 'Vegas Strip Marathon Plan'. */
   readonly planName: string;
+  /** The three cached route-card titles, remapped 1:1 (index-aligned). */
+  readonly routeNames: readonly [string, string, string];
+  /** Theme/subtitle label, e.g. 'Neon Strip Run'. */
+  readonly themeLabel: string;
+  /** Route "Total distance" value shown on cards, e.g. '26.2 miles'. */
+  readonly routeDistance: string;
+  /** Event/assessment date shown on the plan card, e.g. 'November 17, 2024'. */
+  readonly eventDate: string;
+  /** Expected participant count on cards, e.g. '10,000'. */
+  readonly expectedParticipants: string;
 }
 
 export const VEGAS_COPY: ScenarioCopy = {
@@ -71,6 +82,11 @@ export const VEGAS_COPY: ScenarioCopy = {
   cityName: 'Las Vegas',
   routeName: 'Las Vegas Neon Night Marathon',
   planName: 'Vegas Strip Marathon Plan',
+  routeNames: ['Las Vegas Boulevard', 'Grand Loop', 'East Side Explorer'],
+  themeLabel: 'Neon Strip Run',
+  routeDistance: '26.2 miles',
+  eventDate: 'November 17, 2024',
+  expectedParticipants: '10,000',
 };
 
 export const MARIUPOL_COPY: ScenarioCopy = {
@@ -87,6 +103,15 @@ export const MARIUPOL_COPY: ScenarioCopy = {
   cityName: 'Mariupol',
   routeName: 'Mariupol → Zaporizhzhia Corridor',
   planName: 'Mariupol Evacuation Plan',
+  routeNames: [
+    'Central Corridor · Zones 1–2 → Exit West',
+    'North Corridor · Zones 3–4 → Exit West',
+    'Coastal Corridor · Zone 5 → Exit West',
+  ],
+  themeLabel: 'Self-evacuation corridor',
+  routeDistance: `${MARIUPOL_FACTS.corridorKm} km`,
+  eventDate: MARIUPOL_FACTS.assessmentDate,
+  expectedParticipants: '37,663',
 };
 
 /** Registry keyed by Site id. */
@@ -107,9 +132,16 @@ export function getActiveCopy(): ScenarioCopy {
 export function rewordWith(text: string, copy: ScenarioCopy): string {
   if (!text || copy.id === 'vegas') return text;
   return text
+    .replace(/Las Vegas Boulevard/gi, copy.routeNames[0])
+    .replace(/Grand Loop/gi, copy.routeNames[1])
+    .replace(/East Side Explorer/gi, copy.routeNames[2])
     .replace(/Las Vegas Neon Night Marathon/gi, copy.routeName)
     .replace(/Vegas Strip Marathon Plan/gi, copy.planName)
+    .replace(/Neon Strip Run/gi, copy.themeLabel)
     .replace(/Las Vegas/gi, copy.cityName)
+    .replace(/26\.2 miles/gi, copy.routeDistance)
+    .replace(/November 17, 2024/gi, copy.eventDate)
+    .replace(/\b10,000\b/g, copy.expectedParticipants)
     .replace(/crossed the finish line/gi, copy.finishPhrase)
     .replace(/\bRunners\b/g, capitalize(copy.participantPlural))
     .replace(/\brunners\b/g, copy.participantPlural)

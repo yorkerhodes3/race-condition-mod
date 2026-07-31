@@ -54,6 +54,9 @@ const POI_COLORS: Record<string, number> = {
   filtration: 0xb06be0,
 };
 
+/** Per-cohort zone colours (index-aligned to the origin zones, Z1..Zn). */
+const ZONE_COLORS: number[] = [0xff5c72, 0x4d96ff, 0xf2c200, 0x35e0c8, 0xb06be0, 0xff8c42];
+
 async function fetchJson(url: string): Promise<unknown> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
@@ -252,8 +255,12 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
   let zoneIdx = 0;
   for (const p of pois) {
     const { x, z } = project(p.lon, p.lat);
-    const color = POI_COLORS[p.type] ?? 0x888888;
     const isZone = p.type === 'origin_zone';
+    // Each origin-zone cohort gets its own colour so it is traceable end-to-end
+    // (marker + convergence + evacuee agents all share the zone colour).
+    const color = isZone
+      ? ZONE_COLORS[zoneIdx % ZONE_COLORS.length]
+      : POI_COLORS[p.type] ?? 0x888888;
     const mat = new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -424,26 +431,38 @@ function addEvacuees(
   }
   if (!curves.length) return;
 
-  const perPath = 9;
-  const count = curves.length * perPath;
+  // Distribute agents across cohorts weighted by zone population; each agent
+  // carries its origin-zone tag + id, so the cohort data travels with it on
+  // every tick (the schematic analogue of per-runner simulation state).
+  const TOTAL = 80;
+  const pops = origins.map((o) => Math.max(1, o.population ?? 1));
+  const popSum = pops.reduce((a, b) => a + b, 0);
+  const counts = pops.map((p) => Math.max(4, Math.round((TOTAL * p) / popSum)));
+  const count = counts.reduce((a, b) => a + b, 0);
+
   const mesh = new THREE.InstancedMesh(
     new THREE.SphereGeometry(2.1, 8, 8),
-    new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      emissive: 0x7ef0c8,
-      emissiveIntensity: 1.4,
-    }),
+    new THREE.MeshBasicMaterial({ toneMapped: false }),
     count,
   );
   mesh.name = 'schematic-evacuees';
   mesh.frustumCulled = false;
 
-  const state: { ci: number; t: number; speed: number }[] = [];
+  const state: { ci: number; t: number; speed: number; zoneId: string; tag: string }[] = [];
+  const color = new THREE.Color();
+  let idx = 0;
   for (let ci = 0; ci < curves.length; ci++) {
-    for (let k = 0; k < perPath; k++) {
-      state.push({ ci, t: k / perPath, speed: 0.02 + Math.random() * 0.03 });
+    const o = origins[ci];
+    const zoneId = o.zoneId ?? `Z${ci + 1}`;
+    const tag = o.tag ?? `zone-${ci + 1}`;
+    const hex = ZONE_COLORS[ci % ZONE_COLORS.length];
+    for (let k = 0; k < counts[ci]; k++) {
+      state.push({ ci, t: k / counts[ci], speed: 0.02 + Math.random() * 0.03, zoneId, tag });
+      mesh.setColorAt(idx, color.setHex(hex));
+      idx++;
     }
   }
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
 
   const m = new THREE.Matrix4();
   const pos = new THREE.Vector3();
