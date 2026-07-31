@@ -91,6 +91,23 @@ export const CITY_SCENARIOS: Readonly<Record<string, CityScenario>> = {
     fidelity:
       'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones/exits (real named neighbourhoods, not surveyed), routes (representative corridor), and demographics (synthetic 12,000-person split, ~40% vulnerable).',
   },
+  venice: {
+    id: 'venice',
+    name: 'Venice',
+    country: 'Italy',
+    district: 'Central islands (San Marco · Rialto · Cannaregio · Dorsoduro · Castello)',
+    anchor: { lat: 45.4364, lon: 12.3332 },
+    populationTarget: 12000,
+    zones: 5,
+    exits: 2,
+    cohesion: 0.82,
+    avgHouseholdSize: 2.2,
+    buildingCount: 4438,
+    buildingSource:
+      'OpenStreetMap building footprints (Overpass API, way["building"] centroids), © OpenStreetMap contributors (ODbL).',
+    fidelity:
+      'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones (real sestieri, not surveyed) and demographics (synthetic 12,000-person split, ~40% vulnerable). Exits are placed at the REAL land-egress points (Piazzale Roma causeway, Santa Lucia rail station); corridor is a representative pedestrian line, not a routed calle path.',
+  },
 };
 
 /** Total population across a city's zones must equal this. */

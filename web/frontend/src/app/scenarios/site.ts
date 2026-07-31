@@ -153,12 +153,31 @@ export const BARCELONA_SITE: Site = {
   },
 };
 
+/**
+ * Venice — case-study city scenario (real OSM building geometry + a
+ * representative 5-zone / 2-exit evacuation model). A dense pedestrian island
+ * with only two land-egress points at the NW causeway. Schematic; opt-in via
+ * `?scenario=venice`. Never the default.
+ */
+export const VENICE_SITE: Site = {
+  id: 'venice',
+  name: 'Venice',
+  mapCenter: { lat: 45.4364, lon: 12.3332 },
+  glbTransform: { scale: 0.1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  data: {
+    buildingsUrl: 'scenarios/venice/buildings.json',
+    routeUrl: 'scenarios/venice/route.geojson',
+    poisUrl: 'scenarios/venice/pois.geojson',
+  },
+};
+
 /** Registry of known sites. Additional scenarios register here in later phases. */
 export const SITES: Record<string, Site> = {
   [VEGAS_SITE.id]: VEGAS_SITE,
   [MARIUPOL_SITE.id]: MARIUPOL_SITE,
   [PARIS_SITE.id]: PARIS_SITE,
   [BARCELONA_SITE.id]: BARCELONA_SITE,
+  [VENICE_SITE.id]: VENICE_SITE,
 };
 
 /** Fallback scenario when nothing is selected or an unknown id is requested. */

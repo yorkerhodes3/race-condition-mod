@@ -66,6 +66,15 @@
       movement: '',
       demo: 'none',
     },
+    venice: {
+      scenario: 'venice',
+      theme: '',
+      route: '',
+      groups: '',
+      mingle: '',
+      movement: '',
+      demo: 'none',
+    },
   };
 
   // Right-panel card content, keyed by the active Site id.
@@ -96,6 +105,13 @@
       'zones, two exits, 12,000 people. <em>Building geometry is real; zones, ' +
       'routes and demographics are illustrative — modelling exercise, not ' +
       'operational.</em></p>',
+    venice:
+      '<span class="sc-badge sc-mariupol">Case study</span>' +
+      '<h3>Venice · Evacuation (case study)</h3>' +
+      '<p>Real OSM buildings (San Marco / Rialto / Cannaregio), five origin ' +
+      'zones, two exits at the only land egress (Piazzale Roma, Santa Lucia), ' +
+      '12,000 people. <em>Building geometry is real; zones, routes and ' +
+      'demographics are illustrative — modelling exercise, not operational.</em></p>',
   };
 
   var $ = function (id) {

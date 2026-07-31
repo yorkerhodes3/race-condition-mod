@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_type": "evacuation",
+        "role": "corridor",
+        "from": "san_marco",
+        "to": "santa_lucia_station",
+        "modes": ["foot", "vaporetto"],
+        "name": "San Marco → Rialto → Cannaregio → Santa Lucia (NW causeway egress)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.3388, 45.4340],
+          [12.3358, 45.4380],
+          [12.3300, 45.4420],
+          [12.3255, 45.4425],
+          [12.3210, 45.4415]
+        ]
+      }
+    }
+  ]
+}
