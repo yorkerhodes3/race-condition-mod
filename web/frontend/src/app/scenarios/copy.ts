@@ -49,6 +49,12 @@ export interface ScenarioCopy {
   readonly finishPhrase: string;
   /** Human noun for the run, e.g. 'marathon' / 'evacuation'. */
   readonly activityNoun: string;
+  /** City/place name in cached cards, e.g. 'Las Vegas' / 'Mariupol'. */
+  readonly cityName: string;
+  /** Full simulated-route title in cached cards, e.g. 'Las Vegas Neon Night Marathon'. */
+  readonly routeName: string;
+  /** Plan card title, e.g. 'Vegas Strip Marathon Plan'. */
+  readonly planName: string;
 }
 
 export const VEGAS_COPY: ScenarioCopy = {
@@ -62,6 +68,9 @@ export const VEGAS_COPY: ScenarioCopy = {
   paceLabel: 'AVG. PACE',
   finishPhrase: 'crossed the finish line',
   activityNoun: 'marathon',
+  cityName: 'Las Vegas',
+  routeName: 'Las Vegas Neon Night Marathon',
+  planName: 'Vegas Strip Marathon Plan',
 };
 
 export const MARIUPOL_COPY: ScenarioCopy = {
@@ -75,6 +84,9 @@ export const MARIUPOL_COPY: ScenarioCopy = {
   paceLabel: 'AVG. PACE',
   finishPhrase: 'reached safety',
   activityNoun: 'evacuation',
+  cityName: 'Mariupol',
+  routeName: 'Mariupol → Zaporizhzhia Corridor',
+  planName: 'Mariupol Evacuation Plan',
 };
 
 /** Registry keyed by Site id. */
@@ -95,6 +107,9 @@ export function getActiveCopy(): ScenarioCopy {
 export function rewordWith(text: string, copy: ScenarioCopy): string {
   if (!text || copy.id === 'vegas') return text;
   return text
+    .replace(/Las Vegas Neon Night Marathon/gi, copy.routeName)
+    .replace(/Vegas Strip Marathon Plan/gi, copy.planName)
+    .replace(/Las Vegas/gi, copy.cityName)
     .replace(/crossed the finish line/gi, copy.finishPhrase)
     .replace(/\bRunners\b/g, capitalize(copy.participantPlural))
     .replace(/\brunners\b/g, copy.participantPlural)

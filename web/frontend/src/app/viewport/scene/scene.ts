@@ -409,6 +409,29 @@ export function startCameraIntro(
     done();
   }
 
+  // Schematic sites (GLB-less, e.g. Mariupol) live at a small world scale near
+  // the origin and have no window-lit skyline, so the Las Vegas fly-in spline
+  // and window sweep don't apply. Frame the schematic directly (close, angled)
+  // and complete immediately so the opening view is useful.
+  const focus = ctx.schematicFocus;
+  if (focus) {
+    ctx.cameraIntro = null;
+    const { center, radius } = focus;
+    ctx.camera.position.set(
+      center.x + radius * 0.9,
+      radius * 1.1,
+      center.z + radius * 0.9,
+    );
+    ctx.camera.lookAt(center);
+    ctx.controls.target.copy(center);
+    ctx.controls.enabled = true;
+    ctx.controls.update();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('viewport:cameraIntroComplete'));
+    }
+    return Promise.resolve();
+  }
+
   ctx.camera.position.copy(introSpline.getPoint(0));
   ctx.camera.lookAt(fromTarget);
   // Keep orbit pivot aligned with the intro look-at so controls.update() never pulls the camera off the spline start.

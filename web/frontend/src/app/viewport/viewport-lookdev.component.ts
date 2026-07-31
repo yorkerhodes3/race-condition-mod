@@ -730,6 +730,7 @@ export class ViewportComponent implements OnInit, OnDestroy {
     tickCameraIntro(this.ctx, delta);
     tickCameraPan(this.ctx, delta);
     tickCameraFollow(this.ctx, delta);
+    this.ctx.schematicUpdate?.(delta);
     this.tickRunnerLabel();
     // this.debugTickRunnerLabel();
     this.tickIconTooltip();
@@ -2132,14 +2133,29 @@ export class ViewportComponent implements OnInit, OnDestroy {
   }
 
   public cameraA(): void {
+    const f = this.ctx.schematicFocus;
+    if (f) {
+      this.panCameraTo(f.center.clone(), new THREE.Vector3(f.radius * 0.9, f.radius * 1.1, f.radius * 0.9));
+      return;
+    }
     this.panCameraTo(new THREE.Vector3(-180, 0, 1400), new THREE.Vector3(-5000, 2500, -5600));
   }
 
   public cameraB(): void {
+    const f = this.ctx.schematicFocus;
+    if (f) {
+      this.panCameraTo(f.center.clone(), new THREE.Vector3(-f.radius * 1.15, f.radius * 0.8, -f.radius * 1.05));
+      return;
+    }
     this.panCameraTo(new THREE.Vector3(1700, 0, -1100), new THREE.Vector3(3200, 2900, 6200));
   }
 
   public cameraTopRoute(): void {
+    const f = this.ctx.schematicFocus;
+    if (f) {
+      this.panCameraTo(f.center.clone(), new THREE.Vector3(f.radius * 0.05, f.radius * 2.4, f.radius * 0.05));
+      return;
+    }
     this.panCameraTo(new THREE.Vector3(1600, 0, 400), new THREE.Vector3(-5200, 8500, 0));
   }
 

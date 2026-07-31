@@ -100,6 +100,12 @@ export class Context {
     onComplete?: () => void;
   } | null = null;
 
+  // ── Schematic site (GLB-less scenarios, e.g. Mariupol) ─────────────────────
+  /** Camera framing target for a schematic world (set by schematic-site.ts). */
+  schematicFocus: { center: THREE.Vector3; radius: number } | null = null;
+  /** Per-frame updater for schematic animations (e.g. evacuee flow). */
+  schematicUpdate: ((delta: number) => void) | null = null;
+
   // ── Lights ────────────────────────────────────────────────────────────────
   dirLight!: THREE.DirectionalLight;
   ambient!: THREE.AmbientLight;

@@ -16,6 +16,7 @@
 
 import { Injectable } from '@angular/core';
 import type { A2uiComponentRecord, A2uiNode } from './a2ui-surface.model';
+import { reword } from '../../scenarios/copy';
 
 export const A2UI_COMPONENT_TYPES = [
   'Text',
@@ -350,7 +351,9 @@ export class A2uiTreeService {
     const data = this.getData(node);
     const text = (data.text ?? data.label ?? '') as unknown;
     const resolved = this.resolveValue(text);
-    return resolved != null ? String(resolved) : '';
+    // Re-word cached/marathon copy into the active scenario's language
+    // (no-op for Vegas — see scenarios/copy.ts).
+    return resolved != null ? reword(String(resolved)) : '';
   }
 
   getIconName(node: A2uiNode): string {

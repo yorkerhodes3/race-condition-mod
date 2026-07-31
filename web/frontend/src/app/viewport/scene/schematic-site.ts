@@ -73,6 +73,8 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
   addGround(ctx);
   addSchematicLights(ctx);
   const bounds = emptyBounds();
+  let corridor: GeoAnchor[] = [];
+  let pois: SitePoi[] = [];
 
   if (site.data.buildingsUrl) {
     try {
@@ -88,7 +90,7 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
 
   if (site.data.routeUrl) {
     try {
-      const corridor = parseCorridor(await fetchJson(site.data.routeUrl));
+      corridor = parseCorridor(await fetchJson(site.data.routeUrl));
       if (corridor.length >= 2) {
         addCorridor(ctx, corridor, project);
         for (const p of corridor) growBounds(bounds, project(p.lon, p.lat));
@@ -100,7 +102,7 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
 
   if (site.data.poisUrl) {
     try {
-      const pois = parsePois(await fetchJson(site.data.poisUrl));
+      pois = parsePois(await fetchJson(site.data.poisUrl));
       if (pois.length) {
         addPois(ctx, pois, project, scale);
         for (const p of pois) growBounds(bounds, project(p.lon, p.lat));
@@ -109,6 +111,10 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
       console.warn('[schematic-site] POIs failed', err);
     }
   }
+
+  // Animate evacuees flowing from the origin zones to the western exit and out
+  // along the corridor — the same "people on the route" read as the Vegas race.
+  addEvacuees(ctx, pois, corridor, project);
 
   // Point the camera at the whole model (city + corridor + zones) so it is
   // actually in frame — there is no city GLB or demo camera to do it. If a demo
@@ -142,6 +148,9 @@ function frameSchematic(ctx: Context, b: Bounds): void {
   const span = Math.max(b.maxX - b.minX, b.maxZ - b.minZ, 40);
   const r = span * 0.85;
   ctx.cameraFollow = null;
+  // Publish the focus so the intro and Cam A/B/C frame the schematic instead of
+  // the (Las Vegas-scale) defaults. Kept at ground level (y = 0).
+  ctx.schematicFocus = { center: new THREE.Vector3(cx, 0, cz), radius: r };
   ctx.camera.position.set(cx + r * 0.9, r * 1.1, cz + r * 0.9);
   ctx.camera.lookAt(cx, 0, cz);
   if (ctx.controls) {
@@ -197,11 +206,13 @@ function addBuildings(
   mesh.name = 'schematic-buildings';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  const footprint = Math.max(0.5, 12 * scale);
+  // Read as city blocks (not dots): wider footprint and exaggerated height so
+  // the skyline is legible at the framed camera distance.
+  const footprint = Math.max(3.5, 45 * scale);
   const m = new THREE.Matrix4();
   buildings.forEach((b, i) => {
     const { x, z } = project(b.lon, b.lat);
-    const h = Math.max(0.5, b.height * scale);
+    const h = Math.max(3, b.height * scale * 4);
     m.makeScale(footprint, h, footprint);
     m.setPosition(x, h / 2, z);
     mesh.setMatrixAt(i, m);
@@ -213,15 +224,15 @@ function addBuildings(
 function addCorridor(ctx: Context, corridor: GeoAnchor[], project: Projector): void {
   const pts = corridor.map((p) => {
     const { x, z } = project(p.lon, p.lat);
-    return new THREE.Vector3(x, 0.6, z);
+    return new THREE.Vector3(x, 0.8, z);
   });
   const curve = new THREE.CatmullRomCurve3(pts);
   const tube = new THREE.Mesh(
-    new THREE.TubeGeometry(curve, Math.max(16, pts.length * 8), 3, 6, false),
+    new THREE.TubeGeometry(curve, Math.max(24, pts.length * 10), 1.4, 8, false),
     new THREE.MeshStandardMaterial({
       color: 0xf2c200,
       emissive: 0xf2c200,
-      emissiveIntensity: 0.5,
+      emissiveIntensity: 0.8,
     }),
   );
   tube.name = 'schematic-corridor';
@@ -238,9 +249,11 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
   const exitPos = exit ? project(exit.lon, exit.lat) : null;
   const origins = pois.filter((p) => p.type === 'origin_zone');
 
+  let zoneIdx = 0;
   for (const p of pois) {
     const { x, z } = project(p.lon, p.lat);
     const color = POI_COLORS[p.type] ?? 0x888888;
+    const isZone = p.type === 'origin_zone';
     const mat = new THREE.MeshStandardMaterial({
       color,
       emissive: color,
@@ -252,15 +265,26 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
     const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1.5, 20), mat);
     disc.position.set(x, 0.9, z);
     group.add(disc);
-    // A vertical pin so a marker is legible from the fly cameras.
+    // A vertical pin so a marker is legible from the fly cameras. Zone pins are
+    // taller so their (staggered) labels clear the cluster.
+    const pinH = isZone ? 46 : 30;
     const pin = new THREE.Mesh(
-      new THREE.CylinderGeometry(1, 1, 30, 6),
+      new THREE.CylinderGeometry(1, 1, pinH, 6),
       mat.clone() as THREE.Material,
     );
-    pin.position.set(x, 15, z);
+    pin.position.set(x, pinH / 2, z);
     group.add(pin);
-    // Text label above named nodes (city, exit, destination, zones, filtration).
-    if (p.name) group.add(makeLabel(p.name, color, x, 34, z));
+    // Text label above named nodes. Stagger the clustered zone labels across a
+    // few heights, and lift key nodes (exit/destination/filtration/city) higher.
+    if (p.name) {
+      const labelY = isZone
+        ? 54 + (zoneIdx % 3) * 11
+        : p.type === 'danger_zone' || p.type === 'shelter'
+          ? 36
+          : 62;
+      group.add(makeLabel(p.name, color, x, labelY, z));
+    }
+    if (isZone) zoneIdx++;
   }
 
   // Convergence: thin routes from each origin zone to the western exit.
@@ -288,7 +312,7 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
       const w = project(o.lon, o.lat);
       ringR = Math.max(ringR, Math.hypot(w.x - cx, w.z - cz));
     }
-    addEncirclement(group, cx, cz, ringR * 1.35);
+    addEncirclement(group, cx, cz, ringR * 1.2);
   }
 
   ctx.scene.add(group);
@@ -365,5 +389,85 @@ function makeLabel(
   sprite.position.set(x, y, z);
   sprite.renderOrder = 999;
   return sprite;
+}
+
+/**
+ * Animated evacuees: small emissive markers that flow from each origin zone to
+ * the western exit and then out along the corridor, looping continuously. This
+ * is the schematic analogue of the Vegas runners moving on the route — a
+ * lightweight instanced animation (no backend, no per-runner agent). It sets
+ * {@link Context.schematicUpdate}, which the render loop ticks each frame.
+ */
+function addEvacuees(
+  ctx: Context,
+  pois: SitePoi[],
+  corridor: GeoAnchor[],
+  project: Projector,
+): void {
+  const origins = pois.filter((p) => p.type === 'origin_zone');
+  if (!origins.length) return;
+  const exit = pois.find((p) => p.type === 'exit');
+  const exitW = exit ? project(exit.lon, exit.lat) : null;
+  const corridorPts = corridor.map((p) => {
+    const { x, z } = project(p.lon, p.lat);
+    return new THREE.Vector3(x, 1.6, z);
+  });
+
+  // One flow curve per origin: origin → exit → along the corridor.
+  const curves: THREE.CatmullRomCurve3[] = [];
+  for (const o of origins) {
+    const w = project(o.lon, o.lat);
+    const pts: THREE.Vector3[] = [new THREE.Vector3(w.x, 1.6, w.z)];
+    if (exitW) pts.push(new THREE.Vector3(exitW.x, 1.6, exitW.z));
+    for (const c of corridorPts) pts.push(c.clone());
+    if (pts.length >= 2) curves.push(new THREE.CatmullRomCurve3(pts));
+  }
+  if (!curves.length) return;
+
+  const perPath = 9;
+  const count = curves.length * perPath;
+  const mesh = new THREE.InstancedMesh(
+    new THREE.SphereGeometry(2.1, 8, 8),
+    new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0x7ef0c8,
+      emissiveIntensity: 1.4,
+    }),
+    count,
+  );
+  mesh.name = 'schematic-evacuees';
+  mesh.frustumCulled = false;
+
+  const state: { ci: number; t: number; speed: number }[] = [];
+  for (let ci = 0; ci < curves.length; ci++) {
+    for (let k = 0; k < perPath; k++) {
+      state.push({ ci, t: k / perPath, speed: 0.02 + Math.random() * 0.03 });
+    }
+  }
+
+  const m = new THREE.Matrix4();
+  const pos = new THREE.Vector3();
+  const rot = new THREE.Quaternion();
+  const scl = new THREE.Vector3(1, 1, 1);
+  const writeAll = (): void => {
+    for (let i = 0; i < state.length; i++) {
+      const st = state[i];
+      curves[st.ci].getPoint(st.t, pos);
+      m.compose(pos, rot, scl);
+      mesh.setMatrixAt(i, m);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+  writeAll();
+  ctx.scene.add(mesh);
+
+  ctx.schematicUpdate = (delta: number): void => {
+    for (let i = 0; i < state.length; i++) {
+      const st = state[i];
+      st.t += st.speed * delta;
+      if (st.t >= 1) st.t -= 1;
+    }
+    writeAll();
+  };
 }
 
