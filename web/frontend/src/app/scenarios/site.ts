@@ -171,6 +171,25 @@ export const VENICE_SITE: Site = {
   },
 };
 
+/**
+ * New York City — case-study city scenario (real OSM building geometry over
+ * Midtown Manhattan + a representative 5-zone / 2-exit evacuation model). Ships
+ * an approximate NYC Marathon course (scenarios/nyc/marathon.geojson) for
+ * comparison with the Vegas Strip marathon. Schematic; opt-in via
+ * `?scenario=nyc`. Never the default.
+ */
+export const NYC_SITE: Site = {
+  id: 'nyc',
+  name: 'New York City',
+  mapCenter: { lat: 40.7669, lon: -73.9799 },
+  glbTransform: { scale: 0.1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  data: {
+    buildingsUrl: 'scenarios/nyc/buildings.json',
+    routeUrl: 'scenarios/nyc/route.geojson',
+    poisUrl: 'scenarios/nyc/pois.geojson',
+  },
+};
+
 /** Registry of known sites. Additional scenarios register here in later phases. */
 export const SITES: Record<string, Site> = {
   [VEGAS_SITE.id]: VEGAS_SITE,
@@ -178,6 +197,7 @@ export const SITES: Record<string, Site> = {
   [PARIS_SITE.id]: PARIS_SITE,
   [BARCELONA_SITE.id]: BARCELONA_SITE,
   [VENICE_SITE.id]: VENICE_SITE,
+  [NYC_SITE.id]: NYC_SITE,
 };
 
 /** Fallback scenario when nothing is selected or an unknown id is requested. */

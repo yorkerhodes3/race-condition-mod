@@ -108,6 +108,23 @@ export const CITY_SCENARIOS: Readonly<Record<string, CityScenario>> = {
     fidelity:
       'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones (real sestieri, not surveyed) and demographics (synthetic 12,000-person split, ~40% vulnerable). Exits are placed at the REAL land-egress points (Piazzale Roma causeway, Santa Lucia rail station); corridor is a representative pedestrian line, not a routed calle path.',
   },
+  nyc: {
+    id: 'nyc',
+    name: 'New York City',
+    country: 'United States',
+    district: 'Midtown Manhattan · Central Park South',
+    anchor: { lat: 40.7669, lon: -73.9799 },
+    populationTarget: 12000,
+    zones: 5,
+    exits: 2,
+    cohesion: 0.72,
+    avgHouseholdSize: 2.0,
+    buildingCount: 2568,
+    buildingSource:
+      'OpenStreetMap building footprints (Overpass API, way["building"] centroids), © OpenStreetMap contributors (ODbL).',
+    fidelity:
+      'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones/exits (real Midtown districts, not census blocks), evacuation corridor (representative), and demographics (synthetic 12,000-person split, ~40% vulnerable). Also ships marathon.geojson: a MEDIUM-fidelity approximate polyline of the TCS NYC Marathon 5-borough course (42.195 km) for comparison with the Vegas Strip marathon.',
+  },
 };
 
 /** Total population across a city's zones must equal this. */

@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_type": "evacuation",
+        "role": "corridor",
+        "from": "times_square",
+        "to": "exit_west",
+        "modes": ["foot", "subway"],
+        "name": "Times Square → Central Park South → Columbus Circle (west egress)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-73.9855, 40.7585],
+          [-73.9825, 40.7620],
+          [-73.9795, 40.7650],
+          [-73.9819, 40.7681]
+        ]
+      }
+    }
+  ]
+}
