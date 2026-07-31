@@ -79,9 +79,10 @@ function isNum(v: unknown): v is number {
 }
 
 /**
- * Parse a buildings array. Accepts either `{ lon, lat, height? }` objects or a
- * `{ centroid: [lon, lat], height? }` shape (OSM centroid style). Unknown/short
- * entries are skipped. Default height 15m.
+ * Parse a buildings array. Accepts `{ lon, lat, height? }` objects, a
+ * `{ centroid: [lon, lat], height? }` shape (OSM centroid style), or a compact
+ * `[lon, lat, height?]` tuple (used by the vendored 45k OSM centroid pack).
+ * Unknown/short entries are skipped. Default height 15m.
  */
 export function parseBuildings(json: unknown): Building[] {
   const rows = Array.isArray(json)
@@ -91,6 +92,14 @@ export function parseBuildings(json: unknown): Building[] {
       : [];
   const out: Building[] = [];
   for (const r of rows) {
+    // Compact tuple form: [lon, lat] or [lon, lat, height].
+    if (Array.isArray(r)) {
+      if (r.length >= 2 && isNum(r[0]) && isNum(r[1])) {
+        const h = isNum(r[2]) ? (r[2] as number) : 15;
+        out.push({ lon: r[0] as number, lat: r[1] as number, height: Math.max(1, h) });
+      }
+      continue;
+    }
     if (!r || typeof r !== 'object') continue;
     const o = r as Record<string, unknown>;
     let lon: unknown = o['lon'];
@@ -105,6 +114,49 @@ export function parseBuildings(json: unknown): Building[] {
     if (!isNum(lon) || !isNum(lat)) continue;
     const h = isNum(o['height']) ? (o['height'] as number) : 15;
     out.push({ lon, lat, height: Math.max(1, h) });
+  }
+  return out;
+}
+
+// ── Damage points (UNOSAT) ───────────────────────────────────────────────────
+
+export interface DamagePoint {
+  lon: number;
+  lat: number;
+  /** 0 possible · 1 moderate · 2 severe · 3 destroyed. */
+  severity: number;
+}
+
+/**
+ * Parse a UNOSAT-style damage array of compact `[lon, lat, severity]` tuples
+ * (severity 0–3). Also tolerates GeoJSON Point features with a `severity`
+ * property. Malformed entries are skipped.
+ */
+export function parseDamage(json: unknown): DamagePoint[] {
+  const rows = Array.isArray(json) ? json : featuresOf(json);
+  const out: DamagePoint[] = [];
+  for (const r of rows) {
+    if (Array.isArray(r)) {
+      if (r.length >= 2 && isNum(r[0]) && isNum(r[1])) {
+        out.push({
+          lon: r[0] as number,
+          lat: r[1] as number,
+          severity: isNum(r[2]) ? (r[2] as number) : 1,
+        });
+      }
+      continue;
+    }
+    if (!r || typeof r !== 'object') continue;
+    const feat = r as Record<string, unknown>;
+    const geom = feat['geometry'] as Record<string, unknown> | undefined;
+    const coords = geom?.['coordinates'];
+    if (!Array.isArray(coords) || !isNum(coords[0]) || !isNum(coords[1])) continue;
+    const props = (feat['properties'] as Record<string, unknown>) ?? {};
+    out.push({
+      lon: coords[0] as number,
+      lat: coords[1] as number,
+      severity: isNum(props['severity']) ? (props['severity'] as number) : 1,
+    });
   }
   return out;
 }

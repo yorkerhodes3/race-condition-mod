@@ -19,7 +19,7 @@
  * and defensive GeoJSON/building parsing.
  */
 import { describe, it, expect } from 'vitest';
-import { makeProjector, parseBuildings, parseCorridor, parsePois } from './geo';
+import { makeProjector, parseBuildings, parseCorridor, parsePois, parseDamage } from './geo';
 
 const MARIUPOL = { lat: 47.0958, lon: 37.5497 };
 
@@ -67,6 +67,31 @@ describe('parseBuildings', () => {
   it('accepts a { buildings: [...] } wrapper', () => {
     expect(parseBuildings({ buildings: [{ lon: 1, lat: 2 }] })).toHaveLength(1);
     expect(parseBuildings('nope')).toEqual([]);
+  });
+
+  it('accepts compact [lon,lat] / [lon,lat,height] tuples (vendored OSM pack)', () => {
+    const rows = parseBuildings([
+      [37.55, 47.1],
+      [37.56, 47.11, 30],
+      [37.57], // too short → skipped
+    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toEqual({ lon: 37.55, lat: 47.1, height: 15 });
+    expect(rows[1].height).toBe(30);
+  });
+});
+
+describe('parseDamage', () => {
+  it('parses [lon,lat,severity] tuples and defaults severity to 1', () => {
+    const rows = parseDamage([
+      [37.65, 47.12, 3],
+      [37.66, 47.13],
+      [37.6], // too short → skipped
+    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toEqual({ lon: 37.65, lat: 47.12, severity: 3 });
+    expect(rows[1].severity).toBe(1);
+    expect(parseDamage('nope')).toEqual([]);
   });
 });
 

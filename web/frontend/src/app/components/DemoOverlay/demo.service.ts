@@ -112,7 +112,7 @@ export class DemoService implements OnDestroy {
         break;
       case 'camera': {
         const label = (d.value ?? '').toUpperCase();
-        const index = { A: 0, B: 1, C: 2 }[label];
+        const index = { A: 0, B: 1, C: 2, W: 3 }[label];
         if (index !== undefined) {
           window.dispatchEvent(
             new CustomEvent('filter:changed', {

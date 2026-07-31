@@ -32,9 +32,11 @@ import {
   parseBuildings,
   parseCorridor,
   parsePois,
+  parseDamage,
   type Projector,
   type SitePoi,
   type Building,
+  type DamagePoint,
   type GeoAnchor,
 } from '../../scenarios/geo';
 
@@ -91,6 +93,15 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
     }
   }
 
+  if (site.data.damageUrl) {
+    try {
+      const damage = parseDamage(await fetchJson(site.data.damageUrl));
+      if (damage.length) addDamage(ctx, damage, project);
+    } catch (err) {
+      console.warn('[schematic-site] damage failed', err);
+    }
+  }
+
   if (site.data.routeUrl) {
     try {
       corridor = parseCorridor(await fetchJson(site.data.routeUrl));
@@ -115,14 +126,85 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
     }
   }
 
+  // Record origin-zone closeups so the camera can default to (and cycle) the
+  // evacuation origins instead of a distant overview.
+  ctx.schematicOrigins = pois
+    .filter((p) => p.type === 'origin_zone')
+    .map((p) => {
+      const { x, z } = project(p.lon, p.lat);
+      return { center: new THREE.Vector3(x, 0, z), radius: 160 };
+    });
+
   // Animate evacuees flowing from the origin zones to the western exit and out
   // along the corridor — the same "people on the route" read as the Vegas race.
   addEvacuees(ctx, pois, corridor, project);
 
-  // Point the camera at the whole model (city + corridor + zones) so it is
-  // actually in frame — there is no city GLB or demo camera to do it. If a demo
-  // later runs, it takes over.
-  if (bounds.valid) frameSchematic(ctx, bounds);
+  // Publish the overview focus (whole model) for Cam "overview" + sim gating,
+  // then default the opening view to a random evacuation origin (close up).
+  if (bounds.valid) {
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    const cz = (bounds.minZ + bounds.maxZ) / 2;
+    const span = Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ, 40);
+    ctx.schematicFocus = { center: new THREE.Vector3(cx, 0, cz), radius: span * 0.85 };
+    frameSchematicDefault(ctx);
+  }
+}
+
+/**
+ * Apply the default opening camera for a schematic site: a close-up on a random
+ * evacuation origin if any exist, else the whole-model overview. Instant (no
+ * animation) — used on load and by the intro. Never touches Vegas.
+ */
+export function frameSchematicDefault(ctx: Context): void {
+  const origin =
+    ctx.schematicOrigins.length > 0
+      ? ctx.schematicOrigins[Math.floor(Math.random() * ctx.schematicOrigins.length)]
+      : ctx.schematicFocus;
+  if (!origin) return;
+  applyPose(ctx, origin.center, origin.radius);
+}
+
+/** Instantly place the camera at a 3/4 view of `center` sized by `radius`. */
+function applyPose(ctx: Context, center: THREE.Vector3, radius: number): void {
+  const r = Math.max(radius, 30);
+  ctx.cameraFollow = null;
+  ctx.camera.position.set(center.x + r * 0.9, r * 1.0, center.z + r * 0.9);
+  ctx.camera.lookAt(center);
+  if (ctx.controls) {
+    ctx.controls.target.copy(center);
+    ctx.controls.update();
+  }
+}
+
+export type SchematicCamMode = 'origin' | 'overview' | 'top';
+
+/**
+ * Compute a smooth-pan pose (target + camera offset relative to it) for a
+ * schematic camera mode. `origin` frames one evacuation origin (random, or
+ * `index`); `overview` frames the whole model; `top` is a plan view. Returns
+ * null when there is no schematic focus (Vegas), so callers fall back.
+ */
+export function schematicPose(
+  ctx: Context,
+  mode: SchematicCamMode,
+  index?: number,
+): { target: THREE.Vector3; offset: THREE.Vector3 } | null {
+  let focus = ctx.schematicFocus;
+  if (mode === 'origin' && ctx.schematicOrigins.length) {
+    const i =
+      index !== undefined
+        ? ((index % ctx.schematicOrigins.length) + ctx.schematicOrigins.length) %
+          ctx.schematicOrigins.length
+        : Math.floor(Math.random() * ctx.schematicOrigins.length);
+    focus = ctx.schematicOrigins[i];
+  }
+  if (!focus) return null;
+  const r = Math.max(focus.radius, 30);
+  const offset =
+    mode === 'top'
+      ? new THREE.Vector3(r * 0.05, r * 2.4, r * 0.05)
+      : new THREE.Vector3(r * 0.9, r * 1.0, r * 0.9);
+  return { target: focus.center.clone(), offset };
 }
 
 interface Bounds {
@@ -143,23 +225,6 @@ function growBounds(b: Bounds, p: { x: number; z: number }): void {
   if (p.x > b.maxX) b.maxX = p.x;
   if (p.z < b.minZ) b.minZ = p.z;
   if (p.z > b.maxZ) b.maxZ = p.z;
-}
-
-function frameSchematic(ctx: Context, b: Bounds): void {
-  const cx = (b.minX + b.maxX) / 2;
-  const cz = (b.minZ + b.maxZ) / 2;
-  const span = Math.max(b.maxX - b.minX, b.maxZ - b.minZ, 40);
-  const r = span * 0.85;
-  ctx.cameraFollow = null;
-  // Publish the focus so the intro and Cam A/B/C frame the schematic instead of
-  // the (Las Vegas-scale) defaults. Kept at ground level (y = 0).
-  ctx.schematicFocus = { center: new THREE.Vector3(cx, 0, cz), radius: r };
-  ctx.camera.position.set(cx + r * 0.9, r * 1.1, cz + r * 0.9);
-  ctx.camera.lookAt(cx, 0, cz);
-  if (ctx.controls) {
-    ctx.controls.target.set(cx, 0, cz);
-    ctx.controls.update();
-  }
 }
 
 /**
@@ -191,6 +256,12 @@ function addGround(ctx: Context): void {
   ctx.scene.add(ground);
 }
 
+/** Deterministic 0..1 hash from world coords (stable skyline height variation). */
+function hash01(x: number, z: number): number {
+  const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
 function addBuildings(
   ctx: Context,
   buildings: Building[],
@@ -201,7 +272,7 @@ function addBuildings(
   const mat = new THREE.MeshStandardMaterial({
     color: 0x9aa6b4,
     emissive: 0x2c3644,
-    emissiveIntensity: 0.6,
+    emissiveIntensity: 0.5,
     roughness: 0.85,
     metalness: 0,
   });
@@ -209,18 +280,48 @@ function addBuildings(
   mesh.name = 'schematic-buildings';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  // Read as city blocks (not dots): wider footprint and exaggerated height so
-  // the skyline is legible at the framed camera distance.
-  const footprint = Math.max(3.5, 45 * scale);
+  mesh.frustumCulled = false;
+  // Real OSM centroids are densely packed with no height data, so use a small
+  // footprint and a deterministic hashed height so the city reads as a real,
+  // varied skyline rather than a flat carpet.
+  const footprint = Math.max(1.4, 16 * scale);
   const m = new THREE.Matrix4();
   buildings.forEach((b, i) => {
     const { x, z } = project(b.lon, b.lat);
-    const h = Math.max(3, b.height * scale * 4);
+    const h = 4 + hash01(x, z) * 30;
     m.makeScale(footprint, h, footprint);
     m.setPosition(x, h / 2, z);
     mesh.setMatrixAt(i, m);
   });
   mesh.instanceMatrix.needsUpdate = true;
+  ctx.scene.add(mesh);
+}
+
+/** UNOSAT damage markers: small red posts, taller/brighter with severity. */
+function addDamage(ctx: Context, damage: DamagePoint[], project: Projector): void {
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  const mesh = new THREE.InstancedMesh(
+    geo,
+    new THREE.MeshBasicMaterial({ toneMapped: false }),
+    damage.length,
+  );
+  mesh.name = 'schematic-damage';
+  mesh.frustumCulled = false;
+  const m = new THREE.Matrix4();
+  const color = new THREE.Color();
+  // possible → severe → destroyed: amber → orange → deep red.
+  const palette = [0xe8a13a, 0xe8742f, 0xd63a2f, 0xb0221c];
+  damage.forEach((d, i) => {
+    const { x, z } = project(d.lon, d.lat);
+    const sev = Math.max(0, Math.min(3, d.severity));
+    const h = 6 + sev * 6;
+    m.makeScale(2.2, h, 2.2);
+    m.setPosition(x, h / 2, z);
+    mesh.setMatrixAt(i, m);
+    mesh.setColorAt(i, color.setHex(palette[sev] ?? palette[2]));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   ctx.scene.add(mesh);
 }
 
@@ -230,6 +331,7 @@ function addCorridor(ctx: Context, corridor: GeoAnchor[], project: Projector): v
     return new THREE.Vector3(x, 0.8, z);
   });
   const curve = new THREE.CatmullRomCurve3(pts);
+  ctx.schematicCorridorCurve = curve;
   const tube = new THREE.Mesh(
     new THREE.TubeGeometry(curve, Math.max(24, pts.length * 10), 1.4, 8, false),
     new THREE.MeshStandardMaterial({

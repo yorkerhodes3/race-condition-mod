@@ -105,6 +105,12 @@ export class Context {
   schematicFocus: { center: THREE.Vector3; radius: number } | null = null;
   /** Per-frame updater for schematic animations (e.g. evacuee flow). */
   schematicUpdate: ((delta: number) => void) | null = null;
+  /** Origin-zone closeups (center + radius) for the default/"origin" cameras. */
+  schematicOrigins: { center: THREE.Vector3; radius: number }[] = [];
+  /** The evacuation-corridor curve, so the "walk the route" camera can ride it. */
+  schematicCorridorCurve: THREE.CatmullRomCurve3 | null = null;
+  /** Active "walk the route" state (advances along the corridor each frame). */
+  schematicWalk: { t: number; speed: number } | null = null;
 
   // ── Lights ────────────────────────────────────────────────────────────────
   dirLight!: THREE.DirectionalLight;

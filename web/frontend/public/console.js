@@ -200,6 +200,19 @@
   // ── Wiring ────────────────────────────────────────────────────────────────
   function init() {
     initTheme();
+    // Satellite before/after: link out to the ETC / Christine Lumen feasibility
+    // view (real UNOSAT damage + Esri Wayback imagery). Linked, not re-hosted,
+    // to respect Esri Wayback provider terms.
+    var sat = $('satBtn');
+    if (sat) {
+      sat.addEventListener('click', function () {
+        window.open(
+          'https://ethical-tech-colab.github.io/mariupol-evacuation-model/',
+          '_blank',
+          'noopener',
+        );
+      });
+    }
     $('apply').addEventListener('click', apply);
     $('open').addEventListener('click', function () {
       window.open(buildUrl().href, '_blank', 'noopener');

@@ -52,6 +52,7 @@ import {
   completeCameraIntroImmediately,
 } from './scene/scene';
 import { initPostProcessing } from './scene/postprocessing';
+import { schematicPose } from './scene/schematic-site';
 import { simLog } from '../sim-logger';
 import {
   tickRouteDraw,
@@ -731,6 +732,7 @@ export class ViewportComponent implements OnInit, OnDestroy {
     tickCameraPan(this.ctx, delta);
     tickCameraFollow(this.ctx, delta);
     this.ctx.schematicUpdate?.(delta);
+    this.tickSchematicWalk(delta);
     this.tickRunnerLabel();
     // this.debugTickRunnerLabel();
     this.tickIconTooltip();
@@ -1320,7 +1322,7 @@ export class ViewportComponent implements OnInit, OnDestroy {
 
     if (skipImportPans) {
       snapOrbitCameraTo(this.ctx, center, camOffset);
-    } else {
+    } else if (!this.ctx.schematicFocus) {
       await this.panCameraTo(spline.points[0], new THREE.Vector3(-1000, 5000, 500), {
         speed: 1000,
         maxDuration: 5.0,
@@ -1959,6 +1961,10 @@ export class ViewportComponent implements OnInit, OnDestroy {
 
   /** Point the camera at the current race leader (highest % complete, still running). */
   public followLeader(): void {
+    // Schematic (Mariupol): runners run on the cached (Las Vegas) route geometry
+    // that isn't in this scene, so following one flies off into empty space.
+    // Keep the evacuation model framed instead.
+    if (this.applySchematicCam('overview')) return;
     let leaderMesh: THREE.Mesh | null = null;
     let leaderTime = -1;
     for (const mesh of this._simRunnerMeshes) {
@@ -1984,6 +1990,9 @@ export class ViewportComponent implements OnInit, OnDestroy {
 
   /** Point the camera at a random runner that is still running. */
   public followRandomRunner(): void {
+    // Schematic (Mariupol): see followLeader — frame a random evacuation origin
+    // instead of following an off-scene runner.
+    if (this.applySchematicCam('origin')) return;
     const infos = this.runnerManager
       .getRunnerInfos()
       .filter(
@@ -2019,6 +2028,9 @@ export class ViewportComponent implements OnInit, OnDestroy {
           break;
         case 2:
           this.cameraTopRoute();
+          break;
+        case 3:
+          this.cameraWalk();
           break;
       }
     }
@@ -2133,30 +2145,64 @@ export class ViewportComponent implements OnInit, OnDestroy {
   }
 
   public cameraA(): void {
-    const f = this.ctx.schematicFocus;
-    if (f) {
-      this.panCameraTo(f.center.clone(), new THREE.Vector3(f.radius * 0.9, f.radius * 1.1, f.radius * 0.9));
-      return;
-    }
+    // Schematic (Mariupol): close-up on a random evacuation origin.
+    if (this.applySchematicCam('origin')) return;
     this.panCameraTo(new THREE.Vector3(-180, 0, 1400), new THREE.Vector3(-5000, 2500, -5600));
   }
 
   public cameraB(): void {
-    const f = this.ctx.schematicFocus;
-    if (f) {
-      this.panCameraTo(f.center.clone(), new THREE.Vector3(-f.radius * 1.15, f.radius * 0.8, -f.radius * 1.05));
-      return;
-    }
+    // Schematic: whole-model overview.
+    if (this.applySchematicCam('overview')) return;
     this.panCameraTo(new THREE.Vector3(1700, 0, -1100), new THREE.Vector3(3200, 2900, 6200));
   }
 
   public cameraTopRoute(): void {
-    const f = this.ctx.schematicFocus;
-    if (f) {
-      this.panCameraTo(f.center.clone(), new THREE.Vector3(f.radius * 0.05, f.radius * 2.4, f.radius * 0.05));
-      return;
-    }
+    // Schematic: plan (top-down) view.
+    if (this.applySchematicCam('top')) return;
     this.panCameraTo(new THREE.Vector3(1600, 0, 400), new THREE.Vector3(-5200, 8500, 0));
+  }
+
+  /**
+   * If a schematic site is active, smoothly frame it in the given mode and
+   * return true (so the Las Vegas-scale fallbacks are skipped). Cancels any
+   * active "walk" so cameras don't fight.
+   */
+  private applySchematicCam(mode: 'origin' | 'overview' | 'top'): boolean {
+    const pose = schematicPose(this.ctx, mode);
+    if (!pose) return false;
+    this.ctx.schematicWalk = null;
+    void this.panCameraTo(pose.target, pose.offset);
+    return true;
+  }
+
+  /**
+   * "Walk the evacuation route" — ride the corridor curve at eye height,
+   * looking ahead, so the operator can inspect rubble / safety / where to place
+   * aid + water along the journey. Schematic-only; no-op on Vegas.
+   */
+  public cameraWalk(): void {
+    if (!this.ctx.schematicCorridorCurve) return;
+    if (this.ctx.cameraFollow) stopFollowMesh(this.ctx);
+    this.cancelPostFinishSequence();
+    this.ctx.cameraPan = null;
+    this.ctx.controls.enabled = false;
+    this.ctx.schematicWalk = { t: 0, speed: 0.02 };
+  }
+
+  /** Advance the "walk the route" camera along the corridor each frame. */
+  private tickSchematicWalk(delta: number): void {
+    const walk = this.ctx.schematicWalk;
+    const curve = this.ctx.schematicCorridorCurve;
+    if (!walk || !curve) return;
+    walk.t += walk.speed * delta;
+    if (walk.t >= 1) walk.t = 0;
+    const eye = 8;
+    const ahead = Math.min(walk.t + 0.02, 0.999);
+    const p = curve.getPointAt(walk.t);
+    const look = curve.getPointAt(ahead);
+    this.ctx.camera.position.set(p.x, eye + 4, p.z);
+    this.ctx.camera.lookAt(look.x, eye, look.z);
+    this.ctx.controls.target.set(look.x, eye, look.z);
   }
 
   // Gets a zone or warning object, you need to manually add these to the scene
@@ -2419,6 +2465,9 @@ export class ViewportComponent implements OnInit, OnDestroy {
 
   // Starts the race
   public async startRaceSetupCamera(): Promise<void> {
+    // Schematic (Mariupol): the race spline is off-scene (cached Las Vegas
+    // geometry), so keep the evacuation model framed instead of diving to it.
+    if (this.applySchematicCam('overview')) return;
     if (this.currentSpline) {
       // set the camera 7% down the spline, looking at the start
       const start = this.currentSpline.getPoint(0);

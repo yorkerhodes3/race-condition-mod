@@ -21,7 +21,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { Context } from '../context';
 import { baseFog } from '../config';
 import { getActiveSite } from '../../scenarios/site';
-import { buildSchematicSite } from './schematic-site';
+import { buildSchematicSite, frameSchematicDefault } from './schematic-site';
 import { createHeightFogMaterial } from '../shaders/height-fog-shader';
 import { createWindowMaterial } from '../shaders/window-shader';
 import { createRoadsMaterial } from '../shaders/road-shader';
@@ -411,21 +411,13 @@ export function startCameraIntro(
 
   // Schematic sites (GLB-less, e.g. Mariupol) live at a small world scale near
   // the origin and have no window-lit skyline, so the Las Vegas fly-in spline
-  // and window sweep don't apply. Frame the schematic directly (close, angled)
-  // and complete immediately so the opening view is useful.
+  // and window sweep don't apply. Frame a random evacuation origin close-up and
+  // complete immediately so the opening view is useful (not off in space).
   const focus = ctx.schematicFocus;
   if (focus) {
     ctx.cameraIntro = null;
-    const { center, radius } = focus;
-    ctx.camera.position.set(
-      center.x + radius * 0.9,
-      radius * 1.1,
-      center.z + radius * 0.9,
-    );
-    ctx.camera.lookAt(center);
-    ctx.controls.target.copy(center);
+    frameSchematicDefault(ctx);
     ctx.controls.enabled = true;
-    ctx.controls.update();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('viewport:cameraIntroComplete'));
     }
@@ -732,6 +724,11 @@ export function followMesh(
   },
   damping = 2.0,
 ): void {
+  // Schematic sites (Mariupol) have no in-scene runner meshes to follow — the
+  // simulation runs on the cached Las Vegas route geometry, which lives off in
+  // empty space. Ignore follow requests so the evacuation model stays framed
+  // (the camera is driven by the schematic origin/overview/walk instead).
+  if (ctx.schematicFocus) return;
   ctx.cameraFollow = {
     mesh,
     offset: offset.clone(),

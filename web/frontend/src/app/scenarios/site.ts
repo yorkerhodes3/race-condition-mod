@@ -79,6 +79,8 @@ export interface SiteData {
   routeUrl?: string;
   /** GeoJSON FeatureCollection of POI Points (danger_zone / shelter / …). */
   poisUrl?: string;
+  /** UNOSAT damage points (`[lon,lat,severity]` tuples or GeoJSON Points). */
+  damageUrl?: string;
 }
 
 /**
@@ -113,6 +115,7 @@ export const MARIUPOL_SITE: Site = {
     buildingsUrl: 'scenarios/mariupol/buildings.json',
     routeUrl: 'scenarios/mariupol/route.geojson',
     poisUrl: 'scenarios/mariupol/pois.geojson',
+    damageUrl: 'scenarios/mariupol/damage.json',
   },
 };
 

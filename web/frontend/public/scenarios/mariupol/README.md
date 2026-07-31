@@ -1,16 +1,16 @@
-# Mariupol Site Pack data (mixed: captured stats + synthetic geometry)
+# Mariupol Site Pack data (real open data + schematic corridor)
 
 These files back the schematic Mariupol scenario (`?scenario=mariupol`). The
-**zone cohort statistics are captured real figures** (see below); the
-**geometry** (building footprints, exact zone placements, corridor coordinates)
-is still **representative** — positioned around the city anchor for the schematic,
-not surveyed.
+**buildings, damage, and zone-cohort statistics are real captured data** (see
+below); only the **evacuation corridor line and exact zone marker placements**
+remain schematic.
 
 | File | What it is |
 |---|---|
-| `buildings.json` | A synthetic grid of ~144 building footprints (`{lon,lat,height}`) around the city anchor, for the schematic block skyline. |
-| `route.geojson` | One representative evacuation-corridor `LineString` (EXIT WEST → Zaporizhzhia direction). |
-| `pois.geojson` | Zone/corridor POIs: the **five real emergency-zone cohorts** (with captured population/vulnerable/child/elderly/disabled + damage/dark/destroyed and a `tag`), plus EXIT WEST, the Zaporizhzhia destination, Bezimenne filtration, Azovstal, and a shelter. |
+| `buildings.json` | **Real** — 45,544 OSM building centroids (`[lon,lat]` tuples) from the ETC `mariupol_lights.json`; heights are hashed for skyline variation (no per-building height in the source). |
+| `damage.json` | **Real** — 783 UNITAR/UNOSAT verified damage points (14 Mar 2022, code CE20220223UKR) as `[lon,lat,severity]` (0 possible → 3 destroyed). |
+| `route.geojson` | Schematic evacuation-corridor `LineString` (EXIT WEST → Zaporizhzhia direction). |
+| `pois.geojson` | The **five real emergency-zone cohorts** (captured population/vulnerable/child/elderly/disabled + damage/dark/destroyed + a `tag`), plus EXIT WEST, the Zaporizhzhia destination, Bezimenne filtration, Azovstal, and a shelter. |
 
 ## Captured (real) data now in the pack
 
@@ -25,11 +25,23 @@ and the 16 Mar 2022 severity model:
 - Scenario facts: severity **0.54** (Phase 3/5), pre-siege pop **343,598**,
   **~16%** damaged, **22%** lights, **783** UNOSAT points, **45,544** buildings,
   corridor **227 km** to Zaporizhzhia (in-city Dijkstra route **7.0 km**).
+- **Buildings** (`buildings.json`) — the real 45,544 OSM centroids, vendored from
+  ETC `mariupol_lights.json` (heights hashed; the source has none).
+- **Damage** (`damage.json`) — the real 783 UNOSAT points (14 Mar 2022), vendored
+  from ETC `unosat_mariupol_damage.json` (`march` set).
 
-Still synthetic/geometry-only: `buildings.json` footprints and the exact zone
-lon/lat placements (positioned around the anchor for the schematic, not surveyed).
+Still schematic: the evacuation-corridor line (`route.geojson`) and the exact
+lon/lat of the five zone markers (positioned in the real city centre for the
+model, not surveyed cell centroids).
 
-## Replacing the remaining synthetic geometry (gated)
+## Satellite before/after (real imagery)
+
+The high-fidelity before/after satellite comparison (Esri Wayback Archive tiles +
+UNOSAT overlays) lives on the ETC feasibility page and is **linked, not
+re-hosted**, to respect Esri Wayback provider terms — see the Operator Console's
+**Satellite ↗** button → `https://ethical-tech-colab.github.io/mariupol-evacuation-model/`.
+
+## Replacing the remaining schematic geometry (gated)
 
 The engine consumes generic shapes (see `scenarios/geo.ts`), so real,
 appropriately-licensed data can drop in **without code changes** by overwriting
