@@ -136,11 +136,29 @@ export const PARIS_SITE: Site = {
   },
 };
 
+/**
+ * Barcelona — case-study city scenario (real OSM building geometry + a
+ * representative 5-zone / 2-exit evacuation model). Schematic; opt-in via
+ * `?scenario=barcelona`. Never the default.
+ */
+export const BARCELONA_SITE: Site = {
+  id: 'barcelona',
+  name: 'Barcelona',
+  mapCenter: { lat: 41.389, lon: 2.173 },
+  glbTransform: { scale: 0.1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  data: {
+    buildingsUrl: 'scenarios/barcelona/buildings.json',
+    routeUrl: 'scenarios/barcelona/route.geojson',
+    poisUrl: 'scenarios/barcelona/pois.geojson',
+  },
+};
+
 /** Registry of known sites. Additional scenarios register here in later phases. */
 export const SITES: Record<string, Site> = {
   [VEGAS_SITE.id]: VEGAS_SITE,
   [MARIUPOL_SITE.id]: MARIUPOL_SITE,
   [PARIS_SITE.id]: PARIS_SITE,
+  [BARCELONA_SITE.id]: BARCELONA_SITE,
 };
 
 /** Fallback scenario when nothing is selected or an unknown id is requested. */

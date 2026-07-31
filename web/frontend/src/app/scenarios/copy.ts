@@ -144,6 +144,7 @@ function makeCityEvacCopy(id: string, city: string): ScenarioCopy {
 
 const CITY_EVAC_COPY: Record<string, ScenarioCopy> = {
   paris: makeCityEvacCopy('paris', 'Paris'),
+  barcelona: makeCityEvacCopy('barcelona', 'Barcelona'),
 };
 
 /** Registry keyed by Site id. */

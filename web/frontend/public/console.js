@@ -57,6 +57,15 @@
       movement: '',
       demo: 'none',
     },
+    barcelona: {
+      scenario: 'barcelona',
+      theme: '',
+      route: '',
+      groups: '',
+      mingle: '',
+      movement: '',
+      demo: 'none',
+    },
   };
 
   // Right-panel card content, keyed by the active Site id.
@@ -77,6 +86,13 @@
       '<span class="sc-badge sc-mariupol">Case study</span>' +
       '<h3>Paris · Evacuation (case study)</h3>' +
       '<p>Real OSM buildings (Marais / Île de la Cité / Bastille), five origin ' +
+      'zones, two exits, 12,000 people. <em>Building geometry is real; zones, ' +
+      'routes and demographics are illustrative — modelling exercise, not ' +
+      'operational.</em></p>',
+    barcelona:
+      '<span class="sc-badge sc-mariupol">Case study</span>' +
+      '<h3>Barcelona · Evacuation (case study)</h3>' +
+      '<p>Real OSM buildings (Gothic Quarter / El Born / El Raval), five origin ' +
       'zones, two exits, 12,000 people. <em>Building geometry is real; zones, ' +
       'routes and demographics are illustrative — modelling exercise, not ' +
       'operational.</em></p>',

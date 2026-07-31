@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_type": "evacuation",
+        "role": "corridor",
+        "from": "barri_gotic",
+        "to": "exit_north",
+        "modes": ["foot", "bus"],
+        "name": "Barcelona centre → Exit North (Plaça Catalunya)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2.176, 41.3835],
+          [2.172, 41.386],
+          [2.169, 41.3885],
+          [2.1685, 41.39]
+        ]
+      }
+    }
+  ]
+}

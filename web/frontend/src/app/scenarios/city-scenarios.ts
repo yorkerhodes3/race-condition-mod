@@ -74,6 +74,23 @@ export const CITY_SCENARIOS: Readonly<Record<string, CityScenario>> = {
     fidelity:
       'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones/exits (placed at real named neighbourhoods but not surveyed), routes (representative corridor, not a routed street path), and demographics (synthetic 12,000-person split, ~40% vulnerable).',
   },
+  barcelona: {
+    id: 'barcelona',
+    name: 'Barcelona',
+    country: 'Spain',
+    district: 'Ciutat Vella (Gòtic · Born · Raval) · Eixample edge',
+    anchor: { lat: 41.389, lon: 2.173 },
+    populationTarget: 12000,
+    zones: 5,
+    exits: 2,
+    cohesion: 0.8,
+    avgHouseholdSize: 2.5,
+    buildingCount: 4243,
+    buildingSource:
+      'OpenStreetMap building footprints (Overpass API, way["building"] centroids), © OpenStreetMap contributors (ODbL).',
+    fidelity:
+      'HIGH for building geometry (real OSM footprints). ILLUSTRATIVE for zones/exits (real named neighbourhoods, not surveyed), routes (representative corridor), and demographics (synthetic 12,000-person split, ~40% vulnerable).',
+  },
 };
 
 /** Total population across a city's zones must equal this. */
