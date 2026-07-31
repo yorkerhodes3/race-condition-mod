@@ -47,6 +47,11 @@ const POI_COLORS: Record<string, number> = {
   triage: 0xff8c42,
   aid_station: 0x35e0c8,
   supply: 0x9b59b6,
+  // Corridor/zone model (schematic evacuation twin, see docs/P7-MARIUPOL-PREP.md).
+  origin_zone: 0xff5c72,
+  exit: 0x35e08a,
+  destination: 0x35e0c8,
+  filtration: 0xb06be0,
 };
 
 async function fetchJson(url: string): Promise<unknown> {
@@ -66,14 +71,15 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
   const project = makeProjector(site.mapCenter, t.scale, t.offsetX, t.offsetZ);
   const scale = t.scale;
   addGround(ctx);
-  let bounds: Bounds | null = null;
+  addSchematicLights(ctx);
+  const bounds = emptyBounds();
 
   if (site.data.buildingsUrl) {
     try {
       const buildings = parseBuildings(await fetchJson(site.data.buildingsUrl));
       if (buildings.length) {
         addBuildings(ctx, buildings, project, scale);
-        bounds = boundsOf(buildings, project);
+        for (const b of buildings) growBounds(bounds, project(b.lon, b.lat));
       }
     } catch (err) {
       console.warn('[schematic-site] buildings failed', err);
@@ -83,7 +89,10 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
   if (site.data.routeUrl) {
     try {
       const corridor = parseCorridor(await fetchJson(site.data.routeUrl));
-      if (corridor.length >= 2) addCorridor(ctx, corridor, project);
+      if (corridor.length >= 2) {
+        addCorridor(ctx, corridor, project);
+        for (const p of corridor) growBounds(bounds, project(p.lon, p.lat));
+      }
     } catch (err) {
       console.warn('[schematic-site] corridor failed', err);
     }
@@ -92,37 +101,39 @@ export async function buildSchematicSite(ctx: Context): Promise<void> {
   if (site.data.poisUrl) {
     try {
       const pois = parsePois(await fetchJson(site.data.poisUrl));
-      if (pois.length) addPois(ctx, pois, project, scale);
+      if (pois.length) {
+        addPois(ctx, pois, project, scale);
+        for (const p of pois) growBounds(bounds, project(p.lon, p.lat));
+      }
     } catch (err) {
       console.warn('[schematic-site] POIs failed', err);
     }
   }
 
-  // Point the camera at the city so the schematic is actually in frame (there is
-  // no city GLB or demo camera to do it). If a demo later runs, it takes over.
-  if (bounds) frameSchematic(ctx, bounds);
+  // Point the camera at the whole model (city + corridor + zones) so it is
+  // actually in frame — there is no city GLB or demo camera to do it. If a demo
+  // later runs, it takes over.
+  if (bounds.valid) frameSchematic(ctx, bounds);
 }
 
 interface Bounds {
+  valid: boolean;
   minX: number;
   maxX: number;
   minZ: number;
   maxZ: number;
 }
 
-function boundsOf(buildings: Building[], project: Projector): Bounds {
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minZ = Infinity;
-  let maxZ = -Infinity;
-  for (const b of buildings) {
-    const { x, z } = project(b.lon, b.lat);
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (z < minZ) minZ = z;
-    if (z > maxZ) maxZ = z;
-  }
-  return { minX, maxX, minZ, maxZ };
+function emptyBounds(): Bounds {
+  return { valid: false, minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+}
+
+function growBounds(b: Bounds, p: { x: number; z: number }): void {
+  b.valid = true;
+  if (p.x < b.minX) b.minX = p.x;
+  if (p.x > b.maxX) b.maxX = p.x;
+  if (p.z < b.minZ) b.minZ = p.z;
+  if (p.z > b.maxZ) b.maxZ = p.z;
 }
 
 function frameSchematic(ctx: Context, b: Bounds): void {
@@ -139,10 +150,27 @@ function frameSchematic(ctx: Context, b: Bounds): void {
   }
 }
 
+/**
+ * Fill lighting for the schematic. The main scene lights are tuned for the Vegas
+ * night render; a GLB-less schematic reads as too dark, so add a hemisphere fill
+ * (sky/ground bounce) and a soft key so buildings, corridor and zones are
+ * legible. Schematic-only — the Vegas path never calls this.
+ */
+function addSchematicLights(ctx: Context): void {
+  const hemi = new THREE.HemisphereLight(0xcfe0f2, 0x3a4450, 2.2);
+  hemi.name = 'schematic-hemi';
+  ctx.scene.add(hemi);
+
+  const fill = new THREE.DirectionalLight(0xffffff, 1.4);
+  fill.name = 'schematic-fill';
+  fill.position.set(600, 1200, 600);
+  ctx.scene.add(fill);
+}
+
 function addGround(ctx: Context): void {
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(20000, 20000),
-    new THREE.MeshStandardMaterial({ color: 0x11151b, roughness: 1, metalness: 0 }),
+    new THREE.MeshStandardMaterial({ color: 0x2b3440, roughness: 1, metalness: 0 }),
   );
   ground.name = 'schematic-ground';
   ground.rotation.x = -Math.PI / 2;
@@ -159,10 +187,10 @@ function addBuildings(
 ): void {
   const geo = new THREE.BoxGeometry(1, 1, 1);
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x5b6470,
-    emissive: 0x171b21,
-    emissiveIntensity: 1,
-    roughness: 0.9,
+    color: 0x9aa6b4,
+    emissive: 0x2c3644,
+    emissiveIntensity: 0.6,
+    roughness: 0.85,
     metalness: 0,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, buildings.length);
@@ -203,13 +231,20 @@ function addCorridor(ctx: Context, corridor: GeoAnchor[], project: Projector): v
 function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: number): void {
   const group = new THREE.Group();
   group.name = 'schematic-pois';
+
+  // Locate the western exit so origin zones can be shown converging on it
+  // (the "multiple origins → EXIT WEST" model), and size the encirclement ring.
+  const exit = pois.find((p) => p.type === 'exit');
+  const exitPos = exit ? project(exit.lon, exit.lat) : null;
+  const origins = pois.filter((p) => p.type === 'origin_zone');
+
   for (const p of pois) {
     const { x, z } = project(p.lon, p.lat);
     const color = POI_COLORS[p.type] ?? 0x888888;
     const mat = new THREE.MeshStandardMaterial({
       color,
       emissive: color,
-      emissiveIntensity: 0.55,
+      emissiveIntensity: 0.6,
       transparent: true,
       opacity: 0.85,
     });
@@ -224,6 +259,111 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
     );
     pin.position.set(x, 15, z);
     group.add(pin);
+    // Text label above named nodes (city, exit, destination, zones, filtration).
+    if (p.name) group.add(makeLabel(p.name, color, x, 34, z));
   }
+
+  // Convergence: thin routes from each origin zone to the western exit.
+  if (exitPos) {
+    for (const o of origins) {
+      const a = project(o.lon, o.lat);
+      addConvergenceLine(group, a, exitPos);
+    }
+  }
+
+  // Encirclement ring around the city (origins) — coloured/scaled like the
+  // corridor-geography figure's severity ring. Drawn around the origin cluster.
+  if (origins.length) {
+    let cx = 0;
+    let cz = 0;
+    for (const o of origins) {
+      const w = project(o.lon, o.lat);
+      cx += w.x;
+      cz += w.z;
+    }
+    cx /= origins.length;
+    cz /= origins.length;
+    let ringR = 30;
+    for (const o of origins) {
+      const w = project(o.lon, o.lat);
+      ringR = Math.max(ringR, Math.hypot(w.x - cx, w.z - cz));
+    }
+    addEncirclement(group, cx, cz, ringR * 1.35);
+  }
+
   ctx.scene.add(group);
 }
+
+/** A dashed-look convergence line from an origin zone to the western exit. */
+function addConvergenceLine(
+  group: THREE.Group,
+  a: { x: number; z: number },
+  b: { x: number; z: number },
+): void {
+  const geom = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(a.x, 1.2, a.z),
+    new THREE.Vector3(b.x, 1.2, b.z),
+  ]);
+  const line = new THREE.Line(
+    geom,
+    new THREE.LineBasicMaterial({ color: 0x35e08a, transparent: true, opacity: 0.7 }),
+  );
+  line.name = 'schematic-convergence';
+  group.add(line);
+}
+
+/** A flat severity ring around the encircled city. */
+function addEncirclement(group: THREE.Group, cx: number, cz: number, radius: number): void {
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(radius * 0.97, radius, 96),
+    new THREE.MeshBasicMaterial({
+      color: 0xf2a900,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.7,
+    }),
+  );
+  ring.name = 'schematic-encirclement';
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(cx, 0.4, cz);
+  group.add(ring);
+}
+
+/**
+ * A camera-facing text label rendered from a canvas texture, positioned in world
+ * space above a marker. Kept small and dependency-free (no font loading).
+ */
+function makeLabel(
+  text: string,
+  color: number,
+  x: number,
+  y: number,
+  z: number,
+): THREE.Sprite {
+  const pad = 8;
+  const font = 22;
+  const canvas = document.createElement('canvas');
+  const cctx = canvas.getContext('2d')!;
+  cctx.font = `600 ${font}px system-ui, sans-serif`;
+  const w = Math.ceil(cctx.measureText(text).width) + pad * 2;
+  const h = font + pad * 2;
+  canvas.width = w;
+  canvas.height = h;
+  cctx.font = `600 ${font}px system-ui, sans-serif`;
+  cctx.fillStyle = 'rgba(8,12,18,0.72)';
+  cctx.fillRect(0, 0, w, h);
+  cctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+  cctx.textBaseline = 'middle';
+  cctx.fillText(text, pad, h / 2);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }),
+  );
+  const worldH = 12;
+  sprite.scale.set((w / h) * worldH, worldH, 1);
+  sprite.position.set(x, y, z);
+  sprite.renderOrder = 999;
+  return sprite;
+}
+

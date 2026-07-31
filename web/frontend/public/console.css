@@ -339,6 +339,52 @@ button.warn:hover {
   font-size: 12px;
 }
 
+/* ── Theme toggle ── */
+.themetoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.themetoggle .tt-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ── Light theme ── */
+body.light {
+  --bg: #eef2f6;
+  --panel: #ffffff;
+  --panel-2: #f2f5f9;
+  --line: rgba(15, 30, 50, 0.14);
+  --text: #17222e;
+  --muted: #5a6b7b;
+  --accent: #2f6fe0;
+  --accent-2: #0f9c8a;
+  --warn: #d23b52;
+  --ok: #1a9d5c;
+  background: radial-gradient(1200px 600px at 70% -10%, #dbe6f2 0%, var(--bg) 60%);
+}
+
+body.light .topbar {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+body.light button.primary {
+  color: #fff;
+}
+
+body.light #stage {
+  background: #0b0f14;
+}
+
+
 kbd {
   background: var(--panel-2);
   border: 1px solid var(--line);

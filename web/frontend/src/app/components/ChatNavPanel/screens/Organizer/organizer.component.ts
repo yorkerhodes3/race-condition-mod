@@ -30,6 +30,7 @@ import { DEMO_CONFIG, PRECONFIGURED_ROUTES } from '../../../../demo-config';
 import { DemoService } from '../../../DemoOverlay/demo.service';
 import { A2uiControllerComponent } from '../../../a2ui/a2-ui-controller.component';
 import { CACHED_ORGANIZER_MESSAGE } from '../../../../../constants';
+import { getActiveSite } from '../../../../scenarios/site';
 
 @Component({
   selector: 'app-organizer',
@@ -87,6 +88,20 @@ export class OrganizerComponent implements OnDestroy {
     effect(async () => {
       const activeDemoKey = this.demoService.activeDemo();
       const activeDemo = DEMO_CONFIG[activeDemoKey] as any;
+
+      // Non-Vegas scenarios (e.g. the Mariupol evacuation twin) have no Las
+      // Vegas marathon "top routes" to organize — the cached organizer surface
+      // is Vegas-specific. Suppress the panel entirely rather than surfacing
+      // marathon route cards under an evacuation scenario, and do not spin up a
+      // live planner agent for it.
+      if (getActiveSite().id !== 'vegas') {
+        this.isOrganizerAvailable = false;
+        this.responseNode = null;
+        this.isOrganizerAgentGettingRoutes = false;
+        this.cdr.markForCheck();
+        return;
+      }
+
       this.isOrganizerAvailable =
         activeDemo.agent === 'planner_with_memory' || activeDemo.agent === 'simulator_with_failure';
 

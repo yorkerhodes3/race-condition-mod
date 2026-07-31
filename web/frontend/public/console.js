@@ -159,8 +159,47 @@
     var site = $('scenario').value || 'vegas';
     $('scenarioCard').innerHTML = SCENARIO_CARDS[site] || SCENARIO_CARDS.vegas;
   }
+
+  // ── Console light / dark theme ──────────────────────────────────────────────
+  var THEME_KEY = 'race-console-theme';
+
+  function applyTheme(theme) {
+    var light = theme === 'light';
+    document.body.classList.toggle('light', light);
+    var btn = $('themeToggle');
+    if (btn) {
+      btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+      var icon = btn.querySelector('.tt-icon');
+      var label = btn.querySelector('.tt-label');
+      if (icon) icon.textContent = light ? '\u25d0' : '\u25d1';
+      if (label) label.textContent = light ? 'Light' : 'Dark';
+    }
+  }
+
+  function initTheme() {
+    var saved = 'dark';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'dark';
+    } catch (e) {
+      /* storage blocked; default to dark */
+    }
+    applyTheme(saved);
+    var btn = $('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var next = document.body.classList.contains('light') ? 'dark' : 'light';
+        applyTheme(next);
+        try {
+          localStorage.setItem(THEME_KEY, next);
+        } catch (e) {
+          /* storage blocked; theme still applies for this session */
+        }
+      });
+    }
+  }
   // ── Wiring ────────────────────────────────────────────────────────────────
   function init() {
+    initTheme();
     $('apply').addEventListener('click', apply);
     $('open').addEventListener('click', function () {
       window.open(buildUrl().href, '_blank', 'noopener');

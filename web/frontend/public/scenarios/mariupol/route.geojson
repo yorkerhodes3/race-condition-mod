@@ -6,20 +6,19 @@
       "properties": {
         "route_type": "evacuation",
         "role": "corridor",
-        "from": "city_center",
-        "to": "safe_exit_nw",
+        "from": "exit_west",
+        "to": "zaporizhzhia_direction",
         "modes": ["foot", "bus"],
-        "name": "Mariupol humanitarian corridor (representative)"
+        "name": "Mariupol → Zaporizhzhia corridor (representative)"
       },
       "geometry": {
         "type": "LineString",
         "coordinates": [
-          [37.5497, 47.0958],
-          [37.535, 47.101],
-          [37.515, 47.109],
-          [37.49, 47.12],
-          [37.455, 47.135],
-          [37.41, 47.158]
+          [37.531, 47.0975],
+          [37.523, 47.102],
+          [37.49, 47.123],
+          [37.472, 47.132],
+          [37.452, 47.144]
         ]
       }
     }

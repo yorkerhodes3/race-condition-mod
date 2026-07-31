@@ -3,33 +3,63 @@
   "features": [
     {
       "type": "Feature",
-      "properties": { "poi_type": "assembly_point", "name": "Muster point — city center" },
-      "geometry": { "type": "Point", "coordinates": [37.5497, 47.0958] }
+      "properties": { "poi_type": "landmark", "name": "MARIUPOL — encircled from 2 Mar" },
+      "geometry": { "type": "Point", "coordinates": [37.5432, 47.0972] }
     },
     {
       "type": "Feature",
-      "properties": { "poi_type": "danger_zone", "name": "Damaged district (east)", "radius": 350 },
-      "geometry": { "type": "Point", "coordinates": [37.561, 47.092] }
+      "properties": { "poi_type": "origin_zone", "name": "Zone 1 · Central", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5432, 47.0965] }
     },
     {
       "type": "Feature",
-      "properties": { "poi_type": "danger_zone", "name": "Damaged district (south)", "radius": 300 },
-      "geometry": { "type": "Point", "coordinates": [37.548, 47.086] }
+      "properties": { "poi_type": "origin_zone", "name": "Zone 2", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5446, 47.0988] }
     },
     {
       "type": "Feature",
-      "properties": { "poi_type": "shelter", "name": "Shelter — school (west)" },
+      "properties": { "poi_type": "origin_zone", "name": "Zone 3", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5419, 47.0998] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "name": "Zone 4", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5449, 47.0927] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "name": "Zone 5", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5417, 47.0912] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "name": "Zone 6", "radius": 220 },
+      "geometry": { "type": "Point", "coordinates": [37.5436, 47.1016] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "exit", "name": "EXIT WEST", "radius": 180 },
+      "geometry": { "type": "Point", "coordinates": [37.531, 47.0975] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "destination", "name": "← ZAPORIZHZHIA (227 km)", "radius": 160 },
+      "geometry": { "type": "Point", "coordinates": [37.49, 47.123] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "filtration", "name": "Bezimenne · filtration (RU-bound, rejected)", "radius": 200 },
+      "geometry": { "type": "Point", "coordinates": [37.562, 47.093] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "danger_zone", "name": "Azovstal (south)", "radius": 300 },
+      "geometry": { "type": "Point", "coordinates": [37.547, 47.0855] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "shelter", "name": "Shelter (west)" },
       "geometry": { "type": "Point", "coordinates": [37.534, 47.103] }
-    },
-    {
-      "type": "Feature",
-      "properties": { "poi_type": "shelter", "name": "Shelter — civic hall (northwest)" },
-      "geometry": { "type": "Point", "coordinates": [37.5, 47.115] }
-    },
-    {
-      "type": "Feature",
-      "properties": { "poi_type": "checkpoint", "name": "Corridor checkpoint" },
-      "geometry": { "type": "Point", "coordinates": [37.455, 47.135] }
     }
   ]
 }
