@@ -119,10 +119,28 @@ export const MARIUPOL_SITE: Site = {
   },
 };
 
+/**
+ * Paris — case-study city scenario (real OSM building geometry + a representative
+ * 5-zone / 2-exit evacuation model; see scenarios/city-scenarios.ts). Schematic
+ * (no GLB); opt-in via `?scenario=paris`. Never the default.
+ */
+export const PARIS_SITE: Site = {
+  id: 'paris',
+  name: 'Paris',
+  mapCenter: { lat: 48.857, lon: 2.353 },
+  glbTransform: { scale: 0.1, offsetX: 0, offsetY: 0, offsetZ: 0, rotationY: 0 },
+  data: {
+    buildingsUrl: 'scenarios/paris/buildings.json',
+    routeUrl: 'scenarios/paris/route.geojson',
+    poisUrl: 'scenarios/paris/pois.geojson',
+  },
+};
+
 /** Registry of known sites. Additional scenarios register here in later phases. */
 export const SITES: Record<string, Site> = {
   [VEGAS_SITE.id]: VEGAS_SITE,
   [MARIUPOL_SITE.id]: MARIUPOL_SITE,
+  [PARIS_SITE.id]: PARIS_SITE,
 };
 
 /** Fallback scenario when nothing is selected or an unknown id is requested. */

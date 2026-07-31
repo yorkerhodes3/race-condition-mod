@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "route_type": "evacuation",
+        "role": "corridor",
+        "from": "hotel_de_ville",
+        "to": "exit_west",
+        "modes": ["foot", "bus"],
+        "name": "Paris centre → Exit West (Rue de Rivoli)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [2.352, 48.8565],
+          [2.349, 48.8585],
+          [2.345, 48.861],
+          [2.341, 48.8635]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "zone_id": "Z1", "tag": "paris-z1", "name": "Z1 · Le Marais · 2,600", "population": 2600, "vulnerable": 1040, "children": 470, "elderly": 420, "disabled": 150, "radius": 163 },
+      "geometry": { "type": "Point", "coordinates": [2.359, 48.8578] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "zone_id": "Z2", "tag": "paris-z2", "name": "Z2 · Île de la Cité · 2,200", "population": 2200, "vulnerable": 880, "children": 400, "elderly": 350, "disabled": 130, "radius": 138 },
+      "geometry": { "type": "Point", "coordinates": [2.349, 48.8535] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "zone_id": "Z3", "tag": "paris-z3", "name": "Z3 · Bastille · 2,600", "population": 2600, "vulnerable": 1040, "children": 470, "elderly": 420, "disabled": 150, "radius": 163 },
+      "geometry": { "type": "Point", "coordinates": [2.366, 48.853] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "zone_id": "Z4", "tag": "paris-z4", "name": "Z4 · Beaubourg · 2,400", "population": 2400, "vulnerable": 960, "children": 430, "elderly": 390, "disabled": 140, "radius": 150 },
+      "geometry": { "type": "Point", "coordinates": [2.352, 48.861] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "origin_zone", "zone_id": "Z5", "tag": "paris-z5", "name": "Z5 · Hôtel de Ville · 2,200", "population": 2200, "vulnerable": 880, "children": 400, "elderly": 350, "disabled": 130, "radius": 138 },
+      "geometry": { "type": "Point", "coordinates": [2.352, 48.8565] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "exit", "name": "EXIT WEST · Rue de Rivoli / Louvre", "radius": 170 },
+      "geometry": { "type": "Point", "coordinates": [2.341, 48.8635] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "exit", "name": "EXIT EAST · Gare de Lyon", "radius": 170 },
+      "geometry": { "type": "Point", "coordinates": [2.366, 48.851] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "assembly_point", "name": "Muster · Place des Vosges" },
+      "geometry": { "type": "Point", "coordinates": [2.3655, 48.8555] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "poi_type": "shelter", "name": "Shelter · Hôtel de Ville" },
+      "geometry": { "type": "Point", "coordinates": [2.3512, 48.8563] }
+    }
+  ]
+}

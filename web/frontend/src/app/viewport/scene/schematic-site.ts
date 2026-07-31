@@ -348,11 +348,13 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
   const group = new THREE.Group();
   group.name = 'schematic-pois';
 
-  // Locate the western exit so origin zones can be shown converging on it
-  // (the "multiple origins → EXIT WEST" model), and size the encirclement ring.
-  const exit = pois.find((p) => p.type === 'exit');
-  const exitPos = exit ? project(exit.lon, exit.lat) : null;
+  // Locate the exits so origin zones can be shown converging on the *nearest*
+  // one (the "multiple origins → exits" model; cities may have several).
+  const exits = pois.filter((p) => p.type === 'exit').map((e) => project(e.lon, e.lat));
   const origins = pois.filter((p) => p.type === 'origin_zone');
+  // The siege ring only makes sense for an encircled city (Mariupol), signalled
+  // by a filtration node; evacuation cities without a front line get no ring.
+  const besieged = pois.some((p) => p.type === 'filtration');
 
   let zoneIdx = 0;
   for (const p of pois) {
@@ -396,17 +398,15 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
     if (isZone) zoneIdx++;
   }
 
-  // Convergence: thin routes from each origin zone to the western exit.
-  if (exitPos) {
-    for (const o of origins) {
-      const a = project(o.lon, o.lat);
-      addConvergenceLine(group, a, exitPos);
-    }
+  // Convergence: thin routes from each origin zone to its nearest exit.
+  for (const o of origins) {
+    const a = project(o.lon, o.lat);
+    const e = nearestPoint(a, exits);
+    if (e) addConvergenceLine(group, a, e);
   }
 
-  // Encirclement ring around the city (origins) — coloured/scaled like the
-  // corridor-geography figure's severity ring. Drawn around the origin cluster.
-  if (origins.length) {
+  // Encirclement ring around the city (origins) — only for a besieged city.
+  if (besieged && origins.length) {
     let cx = 0;
     let cz = 0;
     for (const o of origins) {
@@ -425,6 +425,23 @@ function addPois(ctx: Context, pois: SitePoi[], project: Projector, scale: numbe
   }
 
   ctx.scene.add(group);
+}
+
+/** Nearest point in `pts` to `a` (by XZ distance), or null when empty. */
+function nearestPoint(
+  a: { x: number; z: number },
+  pts: { x: number; z: number }[],
+): { x: number; z: number } | null {
+  let best: { x: number; z: number } | null = null;
+  let bestD = Infinity;
+  for (const p of pts) {
+    const d = (p.x - a.x) * (p.x - a.x) + (p.z - a.z) * (p.z - a.z);
+    if (d < bestD) {
+      bestD = d;
+      best = p;
+    }
+  }
+  return best;
 }
 
 /** A dashed-look convergence line from an origin zone to the western exit. */
@@ -515,19 +532,19 @@ function addEvacuees(
 ): void {
   const origins = pois.filter((p) => p.type === 'origin_zone');
   if (!origins.length) return;
-  const exit = pois.find((p) => p.type === 'exit');
-  const exitW = exit ? project(exit.lon, exit.lat) : null;
+  const exits = pois.filter((p) => p.type === 'exit').map((e) => project(e.lon, e.lat));
   const corridorPts = corridor.map((p) => {
     const { x, z } = project(p.lon, p.lat);
     return new THREE.Vector3(x, 1.6, z);
   });
 
-  // One flow curve per origin: origin → exit → along the corridor.
+  // One flow curve per origin: origin → nearest exit → along the corridor out.
   const curves: THREE.CatmullRomCurve3[] = [];
   for (const o of origins) {
     const w = project(o.lon, o.lat);
     const pts: THREE.Vector3[] = [new THREE.Vector3(w.x, 1.6, w.z)];
-    if (exitW) pts.push(new THREE.Vector3(exitW.x, 1.6, exitW.z));
+    const e = nearestPoint(w, exits);
+    if (e) pts.push(new THREE.Vector3(e.x, 1.6, e.z));
     for (const c of corridorPts) pts.push(c.clone());
     if (pts.length >= 2) curves.push(new THREE.CatmullRomCurve3(pts));
   }

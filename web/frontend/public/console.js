@@ -48,6 +48,15 @@
       movement: 'mariupol-mixed',
       demo: 'none',
     },
+    paris: {
+      scenario: 'paris',
+      theme: '',
+      route: '',
+      groups: '',
+      mingle: '',
+      movement: '',
+      demo: 'none',
+    },
   };
 
   // Right-panel card content, keyed by the active Site id.
@@ -64,6 +73,13 @@
       'city, households moving together, and danger / shelter zones. ' +
       '<em>Representative synthetic data — retrospective planning &amp; ' +
       'education, not operational.</em></p>',
+    paris:
+      '<span class="sc-badge sc-mariupol">Case study</span>' +
+      '<h3>Paris · Evacuation (case study)</h3>' +
+      '<p>Real OSM buildings (Marais / Île de la Cité / Bastille), five origin ' +
+      'zones, two exits, 12,000 people. <em>Building geometry is real; zones, ' +
+      'routes and demographics are illustrative — modelling exercise, not ' +
+      'operational.</em></p>',
   };
 
   var $ = function (id) {

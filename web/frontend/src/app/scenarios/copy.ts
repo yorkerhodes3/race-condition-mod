@@ -114,10 +114,43 @@ export const MARIUPOL_COPY: ScenarioCopy = {
   expectedParticipants: '37,663',
 };
 
+/**
+ * Evacuation copy for the case-study cities (Paris/Barcelona/Venice/NYC). Same
+ * evacuee wording as Mariupol, with the city's own proper nouns for any cached
+ * card that surfaces under that scenario. Registered per city as it ships.
+ */
+function makeCityEvacCopy(id: string, city: string): ScenarioCopy {
+  return {
+    id,
+    participantSingular: 'evacuee',
+    participantPlural: 'evacuees',
+    participantTitle: 'Evacuee',
+    hudTitle: 'Evacuation progress',
+    finishersLabel: 'EVACUEES SAFE',
+    distanceLabel: 'AVG. DISTANCE',
+    paceLabel: 'AVG. PACE',
+    finishPhrase: 'reached safety',
+    activityNoun: 'evacuation',
+    cityName: city,
+    routeName: `${city} Evacuation Corridor`,
+    planName: `${city} Evacuation Plan`,
+    routeNames: [`${city} Corridor A`, `${city} Corridor B`, `${city} Corridor C`],
+    themeLabel: 'Evacuation corridor',
+    routeDistance: '4 km',
+    eventDate: 'exercise scenario',
+    expectedParticipants: '12,000',
+  };
+}
+
+const CITY_EVAC_COPY: Record<string, ScenarioCopy> = {
+  paris: makeCityEvacCopy('paris', 'Paris'),
+};
+
 /** Registry keyed by Site id. */
 export const COPY: Readonly<Record<string, ScenarioCopy>> = {
   [VEGAS_COPY.id]: VEGAS_COPY,
   [MARIUPOL_COPY.id]: MARIUPOL_COPY,
+  ...CITY_EVAC_COPY,
 };
 
 /** The active copy, resolved from the active Site (falls back to Vegas). */
