@@ -98,7 +98,7 @@ jobs:
           cp "${{ steps.dist.outputs.path }}/index.html" "${{ steps.dist.outputs.path }}/404.html"
           touch "${{ steps.dist.outputs.path }}/.nojekyll"
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ steps.dist.outputs.path }}
 
