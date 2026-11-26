@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "race-condition-mod",
+  "title": "Race Condition — Evacuation Twin",
+  "repo": "yorkerhodes3/race-condition-mod",
+  "aliases": [
+    "Ethical-Tech-CoLab/race-condition-mod"
+  ],
+  "summary": "A fork of the Race Condition multi-agent marathon simulation, repurposed as a location-swappable civilian evacuation twin for planning and education, with a DTSF twin backend and browser-run city scenarios.",
+  "kind": "decision-model",
+  "methodTags": [
+    "digital-twins",
+    "decision-models",
+    "agentic-workloads",
+    "open-source"
+  ],
+  "domainTags": [
+    "humanitarian-response",
+    "civic-infrastructure"
+  ],
+  "contribution": {
+    "date": "2026-07-31",
+    "role": "co-built",
+    "roleNote": "Modifies Race Condition (GoogleCloudPlatform/race-condition) by Casey West and the Race Condition team at Google; derivative work under Apache 2.0.",
+    "credits": [
+      {
+        "name": "Casey West",
+        "github": "cwest",
+        "role": "Original author"
+      }
+    ]
+  },
+  "narrative": {
+    "problem": "Upstream Race Condition models thousands of autonomous agents moving along a route through a real 3D city. Civilian evacuation is structurally the same problem — many people, imperfect information, shared routes, bottlenecks, stopping points and a clock — but needs location-specific scenarios grounded in open data rather than a marathon.",
+    "decision": "Each scenario is opt-in through a ?scenario=<id> URL parameter and a pure-data pack (building footprints, routes, POIs, damage) drawn by a GLB-less schematic renderer, so the upstream Vegas marathon stays render-identical and the static build runs on GitHub Pages with no backend or API keys.",
+    "tradeoff": "Pure-data scenarios run offline at no cost, but they are rendered schematically and are not yet driven by the live multi-agent engine: the Go gateway and ADK agents still run the Vegas marathon, and the DTSF twin replays a deterministic trajectory instead of the realtime WebSocket stream.",
+    "limitation": "Evacuation behaviour in the backend is largely an RFC: scenarios are not wired into the live engine, cohort movement and hazard-aware routing are parameters rather than agent behaviour, the DTSF twin control plane is open work, building heights are hashed, and the NYC Marathon route is about 88% of the official distance.",
+    "caveat": "Planning and education exercise over open and synthetic data: zones, exits, corridors and demographics are illustrative and building heights are hashed. Not operational; it must not be used to locate or interdict people."
+  },
+  "evidence": {
+    "level": "working-demo",
+    "links": [
+      {
+        "label": "Latest commit",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/commit/4c8d01fd709d1492bd6f5875290633d7900a390a",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "README",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod#readme",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "Design record (RFC)",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/blob/main/docs/DESIGN-CHANGES-SITE-Purpose.md",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "DTSF twin pack",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/blob/main/dtsf/packs/race-condition/README.md",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "Mariupol preparation and boundaries",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/blob/main/docs/P7-MARIUPOL-PREP.md",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "Backlog",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/blob/main/docs/BACKLOG.md",
+        "date": "2026-07-31"
+      },
+      {
+        "label": "Upstream README",
+        "url": "https://github.com/yorkerhodes3/race-condition-mod/blob/main/README.upstream.md",
+        "date": "2026-07-31"
+      }
+    ]
+  },
+  "links": {
+    "source": "https://github.com/yorkerhodes3/race-condition-mod"
+  },
+  "images": [
+    {
+      "id": "city-banner",
+      "src": "docs/images/banner.png",
+      "alt": "Banner of a dark 3D city model with neon-lit towers, a Ferris wheel, a pyramid and a stadium along a lit street grid, overlaid with the words 'Race condition' in large white type.",
+      "caption": "The upstream Race Condition 3D city simulation that the fork repurposes from a Las Vegas marathon into evacuation scenarios.",
+      "credit": "Image from the race-condition-mod repository",
+      "source": "repository file docs/images/banner.png"
+    },
+    {
+      "id": "why-fork",
+      "src": ".portfolio/why-fork.webp",
+      "alt": "Document excerpt card headed 'Why this fork exists' quoting the README: the fork changes what the simulation is about — a marathon becomes an evacuation — without forking the engine's behaviour.",
+      "caption": "The fork's core design constraint: new scenarios are additive and leave the upstream engine and demo unchanged.",
+      "credit": "Excerpt from the Race Condition — Evacuation Twin README",
+      "source": "README excerpt"
+    },
+    {
+      "id": "fidelity",
+      "src": ".portfolio/fidelity.webp",
+      "alt": "Document excerpt card headed 'Fidelity & ethics' quoting the README: zones, exits, evacuation corridors and all demographics are illustrative or synthetic, and building heights are hashed, not real storeys.",
+      "caption": "What is real (OpenStreetMap footprints) and what is illustrative is labeled for every scenario layer.",
+      "credit": "Excerpt from the Race Condition — Evacuation Twin README",
+      "source": "README excerpt"
+    }
+  ],
+  "defaultImageId": "city-banner"
+}
